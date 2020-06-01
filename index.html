@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Wildlife</title>
+    <meta name="description" content="Explore what wildlife has been seen across the United States and Europe">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <button class="new-search">New Search</button>
+        <button class="about">About</button>
+    </nav>
+
+    <header>
+        <h1>Find Wildlife in the US and Europe, by Region</h1>
+    </header>
+
+    <main>
+        <section class="example-searches">
+            <h2>Example Searches</h2>
+            <button>Squirrels in Denver, Colorado</button>
+            <button>Birds in Seattle, Washington; seen since 2018</button>
+            <button>Reptiles and Insects in Miami, Florida; including results without pictures</button>
+            <button>Plants and Fungi in Dublin, Ireland; no more than 20 results</button>
+            <button>Amphibians in Berlin, Germany</button>
+        </section>
+
+        <section class="search-section">
+            <h2 class="search-header">What Are You Looking For?</h2>
+            <form class="search-form">
+                <label for="search-location">Location</label>
+                <input id="search-location" type="text" name="search-location" required>
+
+                <fieldset class="wildlife-types">
+                    <legend>Types of Wildlife</legend>
+                    <div>
+                        <label for="plants-checkbox">Plants</label>
+                        <input id="plants-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="mollusks-checkbox">Mollusks</label>
+                        <input id="mollusks-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="reptiles-checkbox">Reptiles</label>
+                        <input id="reptiles-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="birds-checkbox">Birds</label>
+                        <input id="birds-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="amphibians-checkbox">Amphibians</label>
+                        <input id="amphibians-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="fish-checkbox">Fish</label>
+                        <input id="fish-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="mammals-checkbox">Mammals</label>
+                        <input id="mammals-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="insects-checkbox">Insects</label>
+                        <input id="insects-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="arachnids-checkbox">Arachnids</label>
+                        <input id="arachnids-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="fungi-checkbox">Fungi</label>
+                        <input id="fungi-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+
+                    <div>
+                        <label for="unknown-checkbox">Unknown</label>
+                        <input id="unknown-checkbox" type="checkbox" name="wildlife-type" checked>
+                    </div>
+                </fieldset>
+
+                <label for="organism-name">Name of Organism</label>
+                <input id="organism-name" type="text" name="organism-name">
+
+                <fieldset class="time-period">
+                    <legend>Time Period</legend>
+                    <label for="search-start">From</label>
+                    <input id="search-start" type="date">
+
+                    <label for="search-end">To</label>
+                    <input id="search-end" type="date">
+                </fieldset>
+
+                <label for="max-pictures">Max Pictures Per Organism</label>
+                <input id="max-pictures" type="number" min="1">
+
+                <label for="without-pictures">Include results without pictures</label>
+                <input id="without-pictures" type="checkbox">
+
+                <label for="max-results">Max Results</label>
+                <input id="max-results" type="number" min="1">
+
+                <button class="search-button" type="submit">Search</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

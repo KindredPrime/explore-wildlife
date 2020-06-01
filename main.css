@@ -1,0 +1,60 @@
+.navbar {
+    background-color: black;
+    border-bottom: 1px solid black;
+}
+
+.new-search, .about {
+    background-color: transparent;
+    color: white;
+    margin-right: 20px;
+}
+
+header {
+    text-align: center;
+}
+
+.example-searches {
+    margin-bottom: 30px;
+}
+
+.example-searches button {
+    background-color: transparent;
+    border: none;
+    display: block;
+}
+
+.example-searches button:hover {
+    cursor: pointer;
+}
+
+.search-header {
+    margin-bottom: 5px;
+}
+
+.search-form input, .search-form fieldset{
+    margin-bottom: 10px;
+}
+
+.search-form input, .search-form label {
+    display: block;
+}
+
+.search-form fieldset {
+    margin-top: 15px;
+    display: inline-block;
+}
+
+.wildlife-types div {
+    display: inline-block;
+    margin-right: 15px;
+}
+
+.wildlife-types input {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-button {
+    margin-top: 10px;
+    margin-bottom: 30px;
+}
