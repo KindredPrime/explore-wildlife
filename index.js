@@ -16,9 +16,68 @@ function wildlifeSearch() {
     let name;
     let startDate;
     let endDate;
-    let maxPictures;
-    let withoutPictures;
-    let maxResults;
+
+    /*
+        Convert the wildlife types to the parameters expected by the iNaturalist API
+    */
+    function convertWildlifeTypesToTaxa() {
+        const wildlifeIconicTaxaConversion = {
+            plants: "Plantae",
+            mollusks: "Mollusca",
+            reptiles: "Reptilia",
+            birds: "Aves",
+            amphibians: "Amphibia",
+            fish: "Actinopterygii",
+            mammals: "Mammalia",
+            insects: "Insecta",
+            arachnids: "Arachnida",
+            fungi: "Fungi",
+            unknown: "Unknown"
+        };
+        
+        return wildlifeTypes.map(wildlifeType => wildlifeIconicTaxaConversion[wildlifeType]);
+    }
+
+    /*
+        Fetch wildlife data from the iNaturalist API, then call the display function
+    */
+    function getWildlifeData(latitude, longitude) {
+        const baseUrl = "https://api.inaturalist.org/v1/observations";
+
+        const iconicTaxa = convertWildlifeTypesToTaxa();
+
+        const params = {
+            lat: latitude,
+            lng: longitude,
+            radius: radius,
+            iconic_taxa: iconicTaxa,
+            taxon_name: name,
+            d1: startDate,
+            d2: endDate,
+            photos: "true",
+            order_by: "species_guess"
+        }
+        const queryParams = formatQueryParams(params);
+        
+        const url = baseUrl + "?" + queryParams;
+
+        fetch(url)
+        .then(response => {
+            if(response.ok) {
+                return response.json();
+            }
+            else {
+                throw Error(reponse.statusText);
+            }
+        })
+        .then(responseJson => {
+            console.log("----------Wildlife data found----------");
+            console.log(responseJson);
+        })
+        .catch(error => {
+            console.log(`Something went wrong while fetching the wildlife data: ${error.message}`);
+        });
+    }
 
     /*
         Convert the provided parameters into an HTTP-friendly format
@@ -60,28 +119,18 @@ function wildlifeSearch() {
             }
         })
         .then(responseJson => {
+            console.log("----------Coordinates found for the provided address----------");
             console.log(responseJson);
 
             // For now just grab the coordinates of the first location in the response
-            const latitude = responseJson[0].latitude;
-            const longitude = responseJson[0].longitude;
+            const latitude = responseJson[0].lat;
+            const longitude = responseJson[0].lon;
+            
+            getWildlifeData(latitude, longitude);
         })
         .catch(error => {
-            console.log(`Something went wrong when calculating latitude and longitude coordinates: ${error.message}`);
+            console.log(`Something went wrong when fetching the latitude and longitude coordinates: ${error.message}`);
         });
-    }
-
-    /*
-        Return true if the checkbox for "Include results without pictures" is checked
-    */
-    function isWithoutPicturesChecked() {
-        const checkedWithoutPic = $("#without-pictures:checked");
-        if(checkedWithoutPic.length === 1) {
-            return true;
-        }
-        else {
-            return false;
-        }
     }
 
     /*
@@ -125,11 +174,8 @@ function wildlifeSearch() {
             name = $("#organism-name").val();
             startDate = $("#search-start").val();
             endDate = $("#search-end").val();
-            maxPictures = $("#max-pictures").val();
-            withoutPictures = isWithoutPicturesChecked();
-            maxResults = $("#max-results").val();
 
-            const coordinates = getLatLonCoordinates(street, city, county, state, country, postalCode);
+            const coordinates = getLatLonCoordinates();
         });
     }
 

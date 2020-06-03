@@ -41,7 +41,8 @@ header {
 
 .search-form fieldset {
     margin-top: 15px;
-    display: inline-block;
+    display: block;
+    width: max-content;
 }
 
 .wildlife-types div {
