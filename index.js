@@ -18,6 +18,59 @@ function wildlifeSearch() {
     let endDate;
 
     /*
+        Pull the page title from the organism's wikipedia URL
+    */
+    function getPageTitle(organism) {
+        const url = organism.wikipedia_url;
+        
+        return url.split("/").pop();
+    }
+
+    /*
+        Fetch the Wikipedia data, then call the display function
+    */
+    function getWikipediaData(wildlifeJson) {
+        const baseUrl = "https://en.wikipedia.org/w/api.php";
+        const params = {
+            action: "query",
+            prop: "extracts",
+            exintro: "true",
+            exlimit: "1",
+            titles: "",
+            explaintext: "1",
+            formatversion: "2",
+            format: "json",
+            origin: "*"
+        }
+
+        // Loop through each organism in the response
+        for(let observation of wildlifeJson.results) {
+            const organism = observation.taxon;
+            
+            // Ignore wildlife data that doesn't have a wikipedia URL, for now
+            if (organism.wikipedia_url != null) {
+                const title = getPageTitle(organism);
+                params.titles = title;
+
+                const queryParams = formatQueryParams(params);
+                
+                const url = baseUrl + "?" + queryParams;
+                
+                fetch(url)
+                .then(convertToJson)
+                .then(wikipediaJson => {
+                    console.log(`Wikipedia intro paragraph for ${organism.preferred_common_name}:`);
+                    console.log(wikipediaJson);
+                    console.log("");
+                });
+            }
+            else {
+                console.log(`No wikipedia link for ${organism.preferred_common_name}`);
+            }
+        }
+    }
+
+    /*
         Convert the wildlife types to the parameters expected by the iNaturalist API
     */
     function convertWildlifeTypesToTaxa() {
@@ -39,7 +92,7 @@ function wildlifeSearch() {
     }
 
     /*
-        Fetch wildlife data from the iNaturalist API, then call the display function
+        Fetch wildlife data from the iNaturalist API, then call the fetch Wikipedia data function
     */
     function getWildlifeData(latitude, longitude) {
         const baseUrl = "https://api.inaturalist.org/v1/observations";
@@ -55,24 +108,20 @@ function wildlifeSearch() {
             d1: startDate,
             d2: endDate,
             photos: "true",
-            order_by: "species_guess"
+            order_by: "species_guess",
+            per_page: "200"
         }
         const queryParams = formatQueryParams(params);
         
         const url = baseUrl + "?" + queryParams;
 
         fetch(url)
-        .then(response => {
-            if(response.ok) {
-                return response.json();
-            }
-            else {
-                throw Error(reponse.statusText);
-            }
-        })
+        .then(convertToJson)
         .then(responseJson => {
             console.log("----------Wildlife data found----------");
             console.log(responseJson);
+            
+            getWikipediaData(responseJson);
         })
         .catch(error => {
             console.log(`Something went wrong while fetching the wildlife data: ${error.message}`);
@@ -87,6 +136,18 @@ function wildlifeSearch() {
 
         const queryItems = populatedParams.map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
         return queryItems.join("&");
+    }
+
+    /*
+        Convert the HTTP Response to JSON, and throw an error if the HTTP Request was not successful
+    */
+    function convertToJson(response) {
+        if(response.ok) {
+            return response.json();
+        }
+        else {
+            throw Error(reponse.statusText);
+        }
     }
 
     /*
@@ -110,14 +171,7 @@ function wildlifeSearch() {
         const url = baseUrl + "?" + queryParams;
 
         fetch(url)
-        .then(response => {
-            if(response.ok) {
-                return response.json();
-            }
-            else {
-                throw Error(response.statusText);
-            }
-        })
+        .then(convertToJson)
         .then(responseJson => {
             console.log("----------Coordinates found for the provided address----------");
             console.log(responseJson);
