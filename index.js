@@ -16,6 +16,14 @@ function wildlifeSearch() {
     let name;
     let startDate;
     let endDate;
+    const allDisplayData = [];
+
+    /*
+        Handle errors that are thrown during fetches
+    */
+    function handleFetchError(error) {
+        console.log(`Something went wrong: ${error.message}`);
+    }
 
     /*
         Convert the provided photo URL into a URL that points to a larger photo
@@ -43,8 +51,8 @@ function wildlifeSearch() {
     /*
         Pull the page title from the organism's wikipedia URL
     */
-    function getPageTitle(organism) {
-        const url = organism.wikipedia_url;
+    function getPageTitle(organismData) {
+        const url = organismData.wikiUrl;
         
         return url.split("/").pop();
     }
@@ -52,7 +60,7 @@ function wildlifeSearch() {
     /*
         Fetch the Wikipedia data, then call the display function
     */
-    function getWikipediaData(wildlifeJson) {
+    function getWikipediaData() {
         const baseUrl = "https://en.wikipedia.org/w/api.php";
         const params = {
             action: "query",
@@ -66,36 +74,42 @@ function wildlifeSearch() {
             origin: "*"
         }
 
-        // Loop through each organism in the response
+        // Loop through each organism in the display data
+        for(let organismData of allDisplayData) {
+            params.titles = getPageTitle(organismData);
+            
+            const queryParams = formatQueryParams(params);
+            const url = baseUrl + "?" + queryParams;
+            
+            fetch(url)
+            .then(convertToJson)
+            .then(responseJson => {
+                console.log(`JSON Response with Wikipedia intro paragraph for ${organismData.name}:`);
+                console.log(responseJson);
+
+                organismData.wikiIntro = responseJson.query.pages[0].extract;
+            })
+            .catch(handleFetchError);
+        }
+    }
+
+    /*
+        Find the data in the iNaturalist HTTP Response JSON data that will be displayed to the user later
+    */
+    function storeRelevantWildlifeData(wildlifeJson) {
         for(let observation of wildlifeJson.results) {
             const organism = observation.taxon;
-            
+
             // Ignore wildlife data that doesn't have a wikipedia URL, for now
             if (organism.wikipedia_url != null) {
-                params.titles = getPageTitle(organism);
+                const organismData = {};
+                organismData.name = organism.preferred_common_name;
+                organismData.photoUrls = getPhotoUrls(observation);
+                organismData.wikiUrl = organism.wikipedia_url;
+                console.log(organismData);
+                console.log("");
 
-                const queryParams = formatQueryParams(params);
-                
-                const url = baseUrl + "?" + queryParams;
-                
-                fetch(url)
-                .then(convertToJson)
-                .then(wikipediaJson => {
-                    console.log(`JSON Response with Wikipedia intro paragraph for ${organism.preferred_common_name}:`);
-                    console.log(wikipediaJson);
-
-                    
-                    const photoUrls = getPhotoUrls(observation);
-                    const wikiIntro = wikipediaJson.query.pages[0].extract;
-                    console.log(`Organism name: ${organism.preferred_common_name}`);
-                    console.log(`Photos: ${photoUrls}`);
-                    console.log(`Wikipedia intro: ${wikiIntro}`);
-                    console.log(`Wikipedia link: ${organism.wikipedia_url}`);
-                    console.log("");
-                })
-                .catch(error => {
-                    console.log(`Something went wrong while fetching the wikipedia data: ${error.message}`);
-                });
+                allDisplayData.push(organismData);
             }
             else {
                 console.log(`No wikipedia link for ${organism.preferred_common_name}`);
@@ -154,7 +168,9 @@ function wildlifeSearch() {
             console.log("----------Wildlife data found----------");
             console.log(responseJson);
             
-            getWikipediaData(responseJson);
+            storeRelevantWildlifeData(responseJson);
+
+            getWikipediaData();
         })
         .catch(error => {
             console.log(`Something went wrong while fetching the wildlife data: ${error.message}`);
