@@ -18,6 +18,29 @@ function wildlifeSearch() {
     let endDate;
 
     /*
+        Convert the provided photo URL into a URL that points to a larger photo
+    */
+    function createNewPhotoUrl(originalUrl) {
+        return originalUrl.replace("/square.jp", "/small.jp");
+    }
+
+    /*
+        Find and return photo URLs for the provided observation
+    */
+    function getPhotoUrls(observation) {
+        const photoUrls = [];
+        const observationPhotosJson = observation.photos;
+        observationPhotosJson.forEach(photoJson => {
+            const originalUrl = photoJson.url;
+            // The photo in the response data is way too small. This method constructs a URL pointing to a larger photo
+            const desiredUrl = createNewPhotoUrl(originalUrl);
+            photoUrls.push(desiredUrl);
+        });
+
+        return photoUrls;
+    }
+
+    /*
         Pull the page title from the organism's wikipedia URL
     */
     function getPageTitle(organism) {
@@ -49,8 +72,7 @@ function wildlifeSearch() {
             
             // Ignore wildlife data that doesn't have a wikipedia URL, for now
             if (organism.wikipedia_url != null) {
-                const title = getPageTitle(organism);
-                params.titles = title;
+                params.titles = getPageTitle(organism);
 
                 const queryParams = formatQueryParams(params);
                 
@@ -59,8 +81,16 @@ function wildlifeSearch() {
                 fetch(url)
                 .then(convertToJson)
                 .then(wikipediaJson => {
-                    console.log(`Wikipedia intro paragraph for ${organism.preferred_common_name}:`);
+                    console.log(`JSON Response with Wikipedia intro paragraph for ${organism.preferred_common_name}:`);
                     console.log(wikipediaJson);
+
+                    
+                    const photoUrls = getPhotoUrls(observation);
+                    const wikiIntro = wikipediaJson.query.pages[0].extract;
+                    console.log(`Organism name: ${organism.preferred_common_name}`);
+                    console.log(`Photos: ${photoUrls}`);
+                    console.log(`Wikipedia intro: ${wikiIntro}`);
+                    console.log(`Wikipedia link: ${organism.wikipedia_url}`);
                     console.log("");
                 });
             }
@@ -214,7 +244,7 @@ function wildlifeSearch() {
                 Steps:
                 grab the user input: Done
                 convert the address to lat/lon coordinates: Done
-                fetch wildlife data
+                fetch wildlife data: Done
                 display wildlife data
             */
             street = $("#search-street").val();
