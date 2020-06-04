@@ -92,6 +92,9 @@ function wildlifeSearch() {
                     console.log(`Wikipedia intro: ${wikiIntro}`);
                     console.log(`Wikipedia link: ${organism.wikipedia_url}`);
                     console.log("");
+                })
+                .catch(error => {
+                    console.log(`Something went wrong while fetching the wikipedia data: ${error.message}`);
                 });
             }
             else {
