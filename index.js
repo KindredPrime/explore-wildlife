@@ -16,7 +16,37 @@ function wildlifeSearch() {
     let name;
     let startDate;
     let endDate;
-    const allDisplayData = [];
+    let allDisplayData = [];
+
+    /*
+        Display the API data to the DOM
+    */
+    function displayData() {
+        // Remove any previous search results from the DOM
+        $(".search-result").remove();
+
+        for(let singleData of allDisplayData) {
+            let displayedPhotos = "";
+            for(let photoUrl of singleData.photoUrls) {
+                const img = `<img src="${photoUrl}" alt="${singleData.name}">`;
+                displayedPhotos = displayedPhotos + img;
+            }
+            $(".search-results").append(`
+            <section class="search-result">
+                <section>
+                    ${displayedPhotos}
+                </section>
+
+                <h3>${singleData.name}</h3>
+                <p>${singleData.wikiIntro}</p>
+                <a href="${singleData.wikiUrl}" target="_blank">${singleData.wikiUrl}</a>
+            </section>
+            `);
+        }
+
+        $(".search-results").removeClass("hidden");
+        allDisplayData = [];
+    }
 
     /*
         Convert the provided photo URL into a URL that points to a larger photo
@@ -262,7 +292,8 @@ function wildlifeSearch() {
             startDate = $("#search-start").val();
             endDate = $("#search-end").val();
 
-            getLatLonCoordinates().then(coordinatesJson => {
+            getLatLonCoordinates()
+            .then(coordinatesJson => {
                 console.log("----------Coordinates found for the provided address----------");
                 console.log(coordinatesJson);
     
@@ -271,14 +302,16 @@ function wildlifeSearch() {
                     "latitude": coordinatesJson[0].lat, 
                     "longitude": coordinatesJson[0].lon
                 };
-            }).catch(handleFetchError)
+            })
+            .catch(handleFetchError)
             .then(getWildlifeData)
             .then(wildlifeJson => {
                 console.log("----------Wildlife data found----------");
                 console.log(wildlifeJson);
                 
                 storeRelevantWildlifeData(wildlifeJson);
-            }).catch(handleFetchError)
+            })
+            .catch(handleFetchError)
             .then(getWikipediaData)
             .then(promiseResults => {
                 console.log(`----------Wikipedia Intros Found----------`);
@@ -289,7 +322,9 @@ function wildlifeSearch() {
     
                     organismData.wikiIntro = wikipediaJson.query.pages[0].extract;
                 }
-            }).catch(handleFetchError);;
+            })
+            .catch(handleFetchError)
+            .then(displayData);
         });
     }
 

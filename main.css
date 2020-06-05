@@ -59,3 +59,13 @@ header {
     margin-top: 10px;
     margin-bottom: 30px;
 }
+
+.hidden {
+    display: none;
+}
+
+.search-result {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 5px solid black;
+}
