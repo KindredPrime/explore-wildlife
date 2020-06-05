@@ -102,14 +102,20 @@ function wildlifeSearch() {
 
             // Ignore wildlife data that doesn't have a wikipedia URL, for now
             if (organism.wikipedia_url != null) {
-                const organismData = {};
-                organismData.name = organism.preferred_common_name;
-                organismData.photoUrls = getPhotoUrls(observation);
-                organismData.wikiUrl = organism.wikipedia_url;
-                console.log(organismData);
-                console.log("");
+                const foundData = allDisplayData.find(element => element.name === organism.preferred_common_name);
 
-                allDisplayData.push(organismData);
+                // If the organism has already been stored, add this observation's pictures to that organism's data
+                if(foundData != undefined) {
+                    foundData.photoUrls = foundData.photoUrls.concat(getPhotoUrls(observation));
+                }
+                else {
+                    const organismData = {};
+                    organismData.name = organism.preferred_common_name;
+                    organismData.photoUrls = getPhotoUrls(observation);
+                    organismData.wikiUrl = organism.wikipedia_url;
+
+                    allDisplayData.push(organismData);
+                }
             }
             else {
                 console.log(`No wikipedia link for ${organism.preferred_common_name}`);
@@ -156,7 +162,7 @@ function wildlifeSearch() {
             d2: endDate,
             photos: "true",
             order_by: "species_guess",
-            per_page: "200"
+            per_page: "20"
         }
         const queryParams = formatQueryParams(params);
         
