@@ -22,7 +22,7 @@ function wildlifeSearch() {
         Handle errors that are thrown during fetches
     */
     function handleFetchError(error) {
-        console.log(`Something went wrong: ${error.message}`);
+        console.log(error.message);
     }
 
     /*
@@ -81,8 +81,8 @@ function wildlifeSearch() {
             const queryParams = formatQueryParams(params);
             const url = baseUrl + "?" + queryParams;
             
-            fetch(url)
-            .then(convertToJson)
+            const errorDescription = "Something went wrong while fetching the Wikipedia data";
+            fetchJson(url, errorDescription)
             .then(responseJson => {
                 console.log(`JSON Response with Wikipedia intro paragraph for ${organismData.name}:`);
                 console.log(responseJson);
@@ -168,8 +168,8 @@ function wildlifeSearch() {
         
         const url = baseUrl + "?" + queryParams;
 
-        fetch(url)
-        .then(convertToJson)
+        const errorDescription = "Something went wrong while fetching the wildlife data";
+        fetchJson(url, errorDescription)
         .then(responseJson => {
             console.log("----------Wildlife data found----------");
             console.log(responseJson);
@@ -179,7 +179,7 @@ function wildlifeSearch() {
             getWikipediaData();
         })
         .catch(error => {
-            console.log(`Something went wrong while fetching the wildlife data: ${error.message}`);
+            console.log(error.message);
         });
     }
 
@@ -194,15 +194,17 @@ function wildlifeSearch() {
     }
 
     /*
-        Convert the HTTP Response to JSON, and throw an error if the HTTP Request was not successful
+        Fetch JSON data from the provided URL, and use the provided error description to explain the context of an error if it occurs during the fetch
     */
-    function convertToJson(response) {
-        if(response.ok) {
-            return response.json();
-        }
-        else {
-            throw Error(reponse.statusText);
-        }
+    function fetchJson(url, errorDescription) {
+        return fetch(url).then(response => {
+            if(response.ok) {
+                return response.json();
+            }
+            else {
+                throw Error(`${errorDescription}: ${reponse.statusText}`);
+            }
+        });
     }
 
     /*
@@ -225,8 +227,8 @@ function wildlifeSearch() {
         const queryParams = formatQueryParams(params);
         const url = baseUrl + "?" + queryParams;
 
-        fetch(url)
-        .then(convertToJson)
+        const errorDescription = "Something went wrong when fetching the latitude and longitude coordinates";
+        fetchJson(url, errorDescription)
         .then(responseJson => {
             console.log("----------Coordinates found for the provided address----------");
             console.log(responseJson);
@@ -238,7 +240,7 @@ function wildlifeSearch() {
             getWildlifeData(latitude, longitude);
         })
         .catch(error => {
-            console.log(`Something went wrong when fetching the latitude and longitude coordinates: ${error.message}`);
+            console.log(error.message);
         });
     }
 
@@ -284,7 +286,7 @@ function wildlifeSearch() {
             startDate = $("#search-start").val();
             endDate = $("#search-end").val();
 
-            const coordinates = getLatLonCoordinates();
+            getLatLonCoordinates();
         });
     }
 
