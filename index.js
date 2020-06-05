@@ -19,13 +19,6 @@ function wildlifeSearch() {
     const allDisplayData = [];
 
     /*
-        Handle errors that are thrown during fetches
-    */
-    function handleFetchError(error) {
-        console.log(error.message);
-    }
-
-    /*
         Convert the provided photo URL into a URL that points to a larger photo
     */
     function createNewPhotoUrl(originalUrl) {
@@ -74,6 +67,9 @@ function wildlifeSearch() {
             origin: "*"
         }
 
+        const errorDescription = "Something went wrong while fetching the Wikipedia data";
+
+        const promises = [];
         // Loop through each organism in the display data
         for(let organismData of allDisplayData) {
             params.titles = getPageTitle(organismData);
@@ -81,16 +77,10 @@ function wildlifeSearch() {
             const queryParams = formatQueryParams(params);
             const url = baseUrl + "?" + queryParams;
             
-            const errorDescription = "Something went wrong while fetching the Wikipedia data";
-            fetchJson(url, errorDescription)
-            .then(responseJson => {
-                console.log(`JSON Response with Wikipedia intro paragraph for ${organismData.name}:`);
-                console.log(responseJson);
-
-                organismData.wikiIntro = responseJson.query.pages[0].extract;
-            })
-            .catch(handleFetchError);
+            promises.push(fetchJson(url, errorDescription));
         }
+
+        return Promise.all(promises);
     }
 
     /*
@@ -147,10 +137,13 @@ function wildlifeSearch() {
     /*
         Fetch wildlife data from the iNaturalist API, then call the fetch Wikipedia data function
     */
-    function getWildlifeData(latitude, longitude) {
+    function getWildlifeData(coordinates) {
         const baseUrl = "https://api.inaturalist.org/v1/observations";
 
         const iconicTaxa = convertWildlifeTypesToTaxa();
+
+        const latitude = coordinates.latitude;
+        const longitude = coordinates.longitude;
 
         const params = {
             lat: latitude,
@@ -169,18 +162,7 @@ function wildlifeSearch() {
         const url = baseUrl + "?" + queryParams;
 
         const errorDescription = "Something went wrong while fetching the wildlife data";
-        fetchJson(url, errorDescription)
-        .then(responseJson => {
-            console.log("----------Wildlife data found----------");
-            console.log(responseJson);
-            
-            storeRelevantWildlifeData(responseJson);
-
-            getWikipediaData();
-        })
-        .catch(error => {
-            console.log(error.message);
-        });
+        return fetchJson(url, errorDescription);
     }
 
     /*
@@ -194,7 +176,14 @@ function wildlifeSearch() {
     }
 
     /*
-        Fetch JSON data from the provided URL, and use the provided error description to explain the context of an error if it occurs during the fetch
+        Handle errors that are thrown during fetches
+    */
+    function handleFetchError(error) {
+        console.log(error.message);
+    }
+
+    /*
+        Fetch JSON data from the provided URL, and use the provided error description to explain the context of an error if it occurs during the fetch.
     */
     function fetchJson(url, errorDescription) {
         return fetch(url).then(response => {
@@ -228,20 +217,7 @@ function wildlifeSearch() {
         const url = baseUrl + "?" + queryParams;
 
         const errorDescription = "Something went wrong when fetching the latitude and longitude coordinates";
-        fetchJson(url, errorDescription)
-        .then(responseJson => {
-            console.log("----------Coordinates found for the provided address----------");
-            console.log(responseJson);
-
-            // For now just grab the coordinates of the first location in the response
-            const latitude = responseJson[0].lat;
-            const longitude = responseJson[0].lon;
-            
-            getWildlifeData(latitude, longitude);
-        })
-        .catch(error => {
-            console.log(error.message);
-        });
+        return fetchJson(url, errorDescription);
     }
 
     /*
@@ -286,7 +262,34 @@ function wildlifeSearch() {
             startDate = $("#search-start").val();
             endDate = $("#search-end").val();
 
-            getLatLonCoordinates();
+            getLatLonCoordinates().then(coordinatesJson => {
+                console.log("----------Coordinates found for the provided address----------");
+                console.log(coordinatesJson);
+    
+                // For now just grab the coordinates of the first location in the response
+                return {
+                    "latitude": coordinatesJson[0].lat, 
+                    "longitude": coordinatesJson[0].lon
+                };
+            }).catch(handleFetchError)
+            .then(getWildlifeData)
+            .then(wildlifeJson => {
+                console.log("----------Wildlife data found----------");
+                console.log(wildlifeJson);
+                
+                storeRelevantWildlifeData(wildlifeJson);
+            }).catch(handleFetchError)
+            .then(getWikipediaData)
+            .then(promiseResults => {
+                console.log(`----------Wikipedia Intros Found----------`);
+                for(let i = 0; i < promiseResults.length; i++) {
+                    const wikipediaJson = promiseResults[i];
+                    console.log(wikipediaJson);
+                    const organismData = allDisplayData[i];
+    
+                    organismData.wikiIntro = wikipediaJson.query.pages[0].extract;
+                }
+            }).catch(handleFetchError);;
         });
     }
 
