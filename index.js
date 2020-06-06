@@ -28,7 +28,7 @@ function wildlifeSearch() {
         for(let singleData of allDisplayData) {
             let displayedPhotos = "";
             for(let photoUrl of singleData.photoUrls) {
-                const img = `<img src="${photoUrl}" alt="${singleData.name}">`;
+                const img = `<img src="${photoUrl}" alt="${singleData.name}" class="organism-photo">`;
                 displayedPhotos = displayedPhotos + img;
             }
             $(".search-results").append(`
@@ -185,7 +185,7 @@ function wildlifeSearch() {
             d2: endDate,
             photos: "true",
             order_by: "species_guess",
-            per_page: "20"
+            per_page: "200"
         }
         const queryParams = formatQueryParams(params);
         

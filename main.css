@@ -84,3 +84,7 @@ header {
     padding-bottom: 10px;
     border-bottom: 5px solid black;
 }
+
+.organism-photo {
+    margin-right: 10px;
+}
