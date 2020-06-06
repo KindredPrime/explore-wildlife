@@ -331,6 +331,32 @@ function wildlifeSearch() {
     handleSearchSubmit();
 }
 
+/*
+    Change the page displayed in the app when a user clicks particular buttons
+*/
+function loadPages() {
+    /*
+        Display the provided page, and hide all other pages
+    */
+    function switchToPage(pageClass) {
+        const displayingPage = $(`article.${pageClass}`);
+        displayingPage.removeClass("hidden");
+        displayingPage.siblings("article").addClass("hidden");
+    }
+
+    /*
+        Handle loading the About page when the About button is clicked
+    */
+    function handleAboutButtonClick() {
+        $(".about-button").click(event => {
+            switchToPage("about-page");
+        });
+    }
+
+    handleAboutButtonClick();
+}
+
 $(function() {
     wildlifeSearch();
+    loadPages();
 });
