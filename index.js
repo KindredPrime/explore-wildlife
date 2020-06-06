@@ -339,7 +339,7 @@ function loadPages() {
         Handle loading the Start page when the New Search button is clicked
     */
     function handleNewSearchButtonClick() {
-        $(".new-search").click(event => {
+        $(".search-button").click(event => {
             switchToPage("search-page");
         })
     }
