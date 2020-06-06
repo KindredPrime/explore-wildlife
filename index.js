@@ -336,6 +336,15 @@ function wildlifeSearch() {
 */
 function loadPages() {
     /*
+        Handle loading the Start page when the New Search button is clicked
+    */
+    function handleNewSearchButtonClick() {
+        $(".new-search").click(event => {
+            switchToPage("search-page");
+        })
+    }
+    
+    /*
         Display the provided page, and hide all other pages
     */
     function switchToPage(pageClass) {
@@ -354,6 +363,7 @@ function loadPages() {
     }
 
     handleAboutButtonClick();
+    handleNewSearchButtonClick();
 }
 
 $(function() {
