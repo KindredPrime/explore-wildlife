@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+}
+
 .navbar {
     background-color: black;
     border-bottom: 1px solid black;
@@ -7,6 +11,10 @@
     background-color: transparent;
     color: white;
     margin-right: 20px;
+}
+
+main {
+    padding: 20px;
 }
 
 header {
@@ -42,6 +50,13 @@ header {
 .search-form fieldset {
     margin-top: 15px;
     display: block;
+}
+
+.wildlife-types {
+    width: 100%;
+}
+
+.search-location, .time-period {
     width: max-content;
 }
 
