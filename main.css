@@ -5,6 +5,10 @@
 .navbar {
     background-color: black;
     border-bottom: 1px solid black;
+    position: fixed;
+    width: 100%;
+    top: 0px;
+    left: 0px;
 }
 
 .search-button, .about-button {
