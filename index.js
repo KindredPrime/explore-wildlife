@@ -48,6 +48,12 @@ function wildlifeSearch() {
             `);
         }
 
+        if(allDisplayData.length === 0) {
+            $(".search-results").append(`
+            <p>No wildlife found</p>
+            `);
+        }
+
         // Remove searching message from page
         $(".searching").addClass("hidden");
 
