@@ -16,6 +16,10 @@ function wildlifeSearch() {
     let name;
     let startDate;
     let endDate;
+
+    // The number of observations returned by the iNaturalist API per page of observations
+    const wildlifePerPage = 200;
+
     let allDisplayData = [];
 
     /*
@@ -120,9 +124,9 @@ function wildlifeSearch() {
     }
 
     /*
-        Find the data in the iNaturalist HTTP Response JSON data that will be displayed to the user later
+        Remove invalid data from the HTTP Response JSON
     */
-    function storeRelevantWildlifeData(wildlifeJson) {
+    function filterWildlifeData(wildlifeJson) {
         for(let observation of wildlifeJson.results) {
             const organism = observation.taxon;
 
@@ -171,9 +175,9 @@ function wildlifeSearch() {
     }
 
     /*
-        Fetch wildlife data from the iNaturalist API, then call the fetch Wikipedia data function
+        Fetch a page of wildlife data from the iNaturalist API
     */
-    function getWildlifeData(coordinates) {
+    function getPageOfWildlifeData(coordinates, page=1) {
         const baseUrl = "https://api.inaturalist.org/v1/observations";
 
         const iconicTaxa = convertWildlifeTypesToTaxa();
@@ -191,14 +195,46 @@ function wildlifeSearch() {
             d2: endDate,
             photos: "true",
             order_by: "species_guess",
-            per_page: "200"
+            page: page.toString(),
+            per_page: wildlifePerPage.toString()
         }
         const queryParams = formatQueryParams(params);
         
         const url = baseUrl + "?" + queryParams;
 
-        const errorDescription = "Something went wrong while fetching the wildlife data";
+        const errorDescription = `Something went wrong while fetching page ${page} of the wildlife data`;
+        console.log(`Fetching data from URL: ${url}`);
         return fetchJson(url, errorDescription);
+    }
+
+    /*
+        Fetch pages of wildlife data, filtering out results from each set, until all results are collected
+    */
+    async function getAllWildlifeData(coordinates) {
+        let page = 1;
+        let numOrganismsThisPage = 0;
+
+        // Loop through all pages of wildlife data
+        while(true) {
+            await getPageOfWildlifeData(coordinates, page)
+            .then(wildlifeJson => {
+                console.log(`----------Wildlife Page ${page} Data----------`);
+                console.log(wildlifeJson);
+                console.log("");
+
+                numOrganismsThisPage = wildlifeJson.results.length;
+                
+                filterWildlifeData(wildlifeJson);
+            })
+            .catch(handleFetchError);
+
+            // If the HTTP Response doesn't have enough observations to meet its page limit, then all following pages of observations will be empty.
+            if(numOrganismsThisPage < wildlifePerPage) {
+                break;
+            }
+
+            page++;
+        }
     }
 
     /*
@@ -310,14 +346,7 @@ function wildlifeSearch() {
                 };
             })
             .catch(handleFetchError)
-            .then(getWildlifeData)
-            .then(wildlifeJson => {
-                console.log("----------Wildlife data found----------");
-                console.log(wildlifeJson);
-                
-                storeRelevantWildlifeData(wildlifeJson);
-            })
-            .catch(handleFetchError)
+            .then(getAllWildlifeData)
             .then(getWikipediaData)
             .then(promiseResults => {
                 console.log(`----------Wikipedia Intros Found----------`);
@@ -328,6 +357,9 @@ function wildlifeSearch() {
     
                     organismData.wikiIntro = wikipediaJson.query.pages[0].extract;
                 }
+        
+                console.log("Display data:");
+                console.log(allDisplayData);
             })
             .catch(handleFetchError)
             .then(displayData);
