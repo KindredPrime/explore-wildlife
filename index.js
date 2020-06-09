@@ -21,7 +21,7 @@ function wildlifeSearch() {
     /*
         Display the API data to the DOM
     */
-    function displayData() {
+    function displayData() {    
         // Remove any previous search results from the DOM
         $(".search-result").remove();
 
@@ -44,7 +44,13 @@ function wildlifeSearch() {
             `);
         }
 
+        // Remove searching message from page
+        $(".searching").addClass("hidden");
+
+        // Show the search results
         $(".search-results").removeClass("hidden");
+
+        // Reset the search data
         allDisplayData = [];
     }
 
@@ -273,13 +279,13 @@ function wildlifeSearch() {
         $(".search-form").submit(event => {
             event.preventDefault();
 
-            /*
-                Steps:
-                grab the user input: Done
-                convert the address to lat/lon coordinates: Done
-                fetch wildlife data: Done
-                display wildlife data
-            */
+            // Hide the search results section from the page
+            $(".search-results").addClass("hidden");
+
+            // Tell the user the search is running
+            $(".searching").removeClass("hidden");
+
+            // Grab the user input
             street = $("#search-street").val();
             city = $("#search-city").val();
             county = $("#search-county").val();
