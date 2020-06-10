@@ -146,7 +146,17 @@ function wildlifeSearch() {
                 }
                 else {
                     const organismData = {};
-                    organismData.name = organism.preferred_common_name;
+
+                    /*
+                        Store the preferred common name if the observation has it, otherwise store the organism's scientific name
+                    */
+                    if(typeof organism.preferred_common_name !== "undefined") {
+                        organismData.name = organism.preferred_common_name;
+                    }
+                    else {
+                        organismData.name = organism.name;
+                    }
+                    
                     organismData.photoUrls = getPhotoUrls(observation);
                     organismData.wikiUrl = organism.wikipedia_url;
 
