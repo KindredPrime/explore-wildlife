@@ -97,6 +97,26 @@ function wildlifeSearch() {
     }
 
     /*
+        Break up the provided array into separate arrays of the provided length.  The provided array is not modified.
+    */
+    function breakUpArray(arr, subLength) {
+        const quotient = Math.floor(arr.length / subLength);
+        const remainder = arr.length % subLength;
+        const brokenUpArrays = [];
+
+        for(let i = 0; i < quotient; i++) {
+            const startIndex = i * subLength;
+            const endIndex = startIndex + subLength;
+            brokenUpArrays.push(arr.slice(startIndex, endIndex));
+        }
+
+        // Store the remainder arrays
+        brokenUpArrays.push(arr.slice(-remainder));
+
+        return brokenUpArrays;
+    }
+
+    /*
         Fetch the Wikipedia data, then call the display function
     */
     function getWikipediaData() {
@@ -105,7 +125,6 @@ function wildlifeSearch() {
             action: "query",
             prop: "extracts",
             exintro: "true",
-            exlimit: "1",
             titles: "",
             explaintext: "1",
             formatversion: "2",
@@ -116,13 +135,23 @@ function wildlifeSearch() {
         const errorDescription = "Something went wrong while fetching the Wikipedia data";
 
         const promises = [];
-        // Loop through each organism in the display data
-        for(let organismData of allDisplayData) {
-            params.titles = getPageTitle(organismData);
-            
+        
+        // Break up the display data into groups of 20, to make fewer calls to the MediaWiki API
+        const displayDataGroups = breakUpArray(allDisplayData, 20);
+        
+        // Loop through each group of organisms in the display data
+        for(const displayDataGroup of displayDataGroups) {
+            // Combine all the organism's Wikipedia URLs into page titles separated by "|"
+            const pageTitles = [];
+            for(const organismData of displayDataGroup) {
+                pageTitles.push(getPageTitle(organismData));
+            }
+            params.titles = pageTitles.join("|");
+
             const queryParams = formatQueryParams(params);
             const url = baseUrl + "?" + queryParams;
             
+            console.log(`Fetching data from URL: ${url}`);
             promises.push(fetchJson(url, errorDescription));
         }
 
@@ -366,12 +395,25 @@ function wildlifeSearch() {
             .then(getWikipediaData)
             .then(promiseResults => {
                 console.log(`----------Wikipedia Intros Found----------`);
-                for(let i = 0; i < promiseResults.length; i++) {
-                    const wikipediaJson = promiseResults[i];
+                // Loop through each MediaWiki Response
+                for(let resultCount = 0; resultCount < promiseResults.length; resultCount++) {
+                    const wikipediaJson = promiseResults[resultCount];
                     console.log(wikipediaJson);
-                    const organismData = allDisplayData[i];
+
+                    // Each MediaWiki Response has 20 Wikipedia pages in it (except the last one, which may have fewer)
+                    const pageBracket = resultCount * 20;
+
+                    // Store the page intro that corresponds to each organism in the page bracket
+                    const wikipediaPages = wikipediaJson.query.pages;
+                    for(let i = 0; i < wikipediaPages.length; i++) {
+                        // Grab the ith organism of the current page bracket
+                        const organismData = allDisplayData[pageBracket + i];
+                        
+                        // Grab the organism's page title and add spaces back into it, so it matches the format of the JSON page titles
+                        const organismPageTitle = getPageTitle(organismData).replace(/_/g, " ");
     
-                    organismData.wikiIntro = wikipediaJson.query.pages[0].extract;
+                        organismData.wikiIntro = wikipediaPages.find(element => element.title === organismPageTitle).extract;
+                    }
                 }
         
                 console.log("Display data:");
