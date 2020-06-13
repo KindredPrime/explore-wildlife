@@ -21,33 +21,37 @@
 
             <section class="search-section">
                 <h2 class="search-header">What Are You Looking For?</h2>
-                <form class="search-form">
-                    <fieldset class="search-location">
-                        <legend>Search Location</legend>
-                        <fieldset>
-                            <legend>Address</legend>
-                            <label for="search-street">Street Name</label>
-                            <input id="search-street" type="text" name="search-street" required>
+                <form class="search-form location">
+                    <fieldset>
+                        <legend>Location</legend>
+                        <label for="search-street">Street Name</label>
+                        <input id="search-street" type="text" name="search-street">
 
-                            <label for="search-city">City</label>
-                            <input id="search-city" type="text" name="search-city" required>
+                        <label for="search-city">City</label>
+                        <input id="search-city" type="text" name="search-city">
 
-                            <label for="search-county">County</label>
-                            <input id="search-county" type="text" name="search-county">
+                        <label for="search-county">County</label>
+                        <input id="search-county" type="text" name="search-county">
 
-                            <label for="search-state">State</label>
-                            <input id="search-state" type="text" name="search-state">
+                        <label for="search-state">State</label>
+                        <input id="search-state" type="text" name="search-state">
 
-                            <label for="search-country">Country</label>
-                            <input id="search-country" type="text" name="search-country" required>
+                        <label for="search-country">Country</label>
+                        <input id="search-country" type="text" name="search-country">
 
-                            <label for="search-postal-code">Postal Code</label>
-                            <input id="search-postal-code" type="number" name="search-postal-code">
-                        </fieldset>
-
-                        <label for="search-radius">Radius (in miles)</label>
-                        <input id="search-radius" type="number" name="search-radius" required value="3" min="1">
+                        <label for="search-postal-code">Postal Code</label>
+                        <input id="search-postal-code" type="number" name="search-postal-code">
                     </fieldset>
+
+                    <button type="submit" class="submit-button find-location">Find Location</button>
+                </form>
+
+                <form class="search-form wildlife-form">
+                    <label for="found-location">Found Location</label>
+                    <input id="found-location" type="text" name="found-location" disabled>
+
+                    <label for="search-radius">Search Radius (in miles)</label>
+                    <input id="search-radius" type="number" name="search-radius" required value="3" min="1">
 
                     <fieldset class="wildlife-types">
                         <legend>Types of Wildlife</legend>
@@ -119,15 +123,15 @@
                         <input id="search-end" type="date">
                     </fieldset>
 
-                    <button class="submit-button" type="submit">Search</button>
+                    <button class="submit-button wildlife-submit" type="submit">Search for Wildlife</button>
                 </form>
             </section>
 
             <p class="searching hidden">Searching...</p>
 
-            <section class="search-results hidden">
+            <section class="wildlife-results hidden">
                 <h2>Search Results</h2>
-                <p class="search-error"></p>
+                <p class="wildlife-error"></p>
             </section>
         </article>
 
@@ -149,6 +153,26 @@
 			  integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
               crossorigin="anonymous">
     </script>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
     <script src="index.js"></script>
+
+    <div class="modal" id="locations-modal" aria-hidden="true">
+        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+            <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="locations-modal-title" >
+                <header class="modal__header">
+                    <h2 id="locations-modal-title" class="modal__title">
+                        Select the location you want
+                    </h2>
+            
+                    <button class= "modal__close" aria-label="Close modal" data-micromodal-close>X</button>
+                </header>
+        
+                <main id="locations-modal-content" class="modal__content">
+                    <p class="find-locations-error"></p>
+                    <form class="locations-results"></form>
+                </main>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
