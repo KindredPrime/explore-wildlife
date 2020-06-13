@@ -11,37 +11,39 @@ function formatQueryParams(params) {
 }
 
 /*
-    Handle errors that are thrown during fetches
-*/
-function handleFetchError(error) {
-    console.log(error.message);
-}
-
-/*
     Fetch JSON data from the provided URL, and use the provided error description to explain the context of an error if it occurs during the fetch.
 */
-function fetchJson(url, errorDescription) {
+function fetchJson(url) {
     return fetch(url).then(response => {
         if(response.ok) {
             return response.json();
         }
         else {
-            console.log(`Error description: ${errorDescription}`)
-            throw Error(`${errorDescription}: ${reponse.statusText}`);
+            throw Error(reponse.statusText);
         }
     });
 }
 
 /*
-    Help the user pick a location to search for wildlife around
+    Help the user pick a address to search for wildlife around
 */
-function locationSearch() {
+function addressSearch() {
     const locationIQKey = "c8f4ef91fa2470";
 
     /*
-        Convert the provided location to a string
+        Handle all errors that occur
     */
-    function convertLocationToString(address) {
+    function handleError(error) {
+        const errorMessage = `An error occurred while finding addresses: ${error.message}`;
+        console.log(errorMessage);
+        $(".find-addresses-error").text(errorMessage);
+        MicroModal.show("addresses-modal");
+    }
+
+    /*
+        Convert the provided address to a string
+    */
+    function convertAddressToString(address) {
         let stringParts = [];
         stringParts.push(`Country: ${address.country}`);
         stringParts.push(`State: ${address.state}`);
@@ -62,56 +64,56 @@ function locationSearch() {
     }
 
     /*
-        Display the provided locations in the found locations modal
+        Display the provided addresses in the found addresses modal
     */
-    function displayLocations(locationOptions) {        
+    function displayAddresses(addressOptions) {
         console.log(`Display data:`);
-        console.log(locationOptions);
+        console.log(addressOptions);
         console.log("");
 
-        for(const location of locationOptions) {
+        for(const address of addressOptions) {
             const dataToDisplay = [];
-            const radioInput = `<input type="radio" id="${location.placeId}" class="location-option" name="location" value="${location.lat},${location.lon}">`;
+            const radioInput = `<input type="radio" id="${address.placeId}" class="address-option" name="address" value="${address.lat},${address.lon}">`;
             dataToDisplay.push(radioInput);
 
-            let labelText = convertLocationToString(location.address);
-            const labelTag = `<label for="${location.placeId}">${labelText}</label>`;
+            let labelText = convertAddressToString(address.address);
+            const labelTag = `<label for="${address.placeId}">${labelText}</label>`;
             dataToDisplay.push(labelTag);
 
             // Also include a break tag
             dataToDisplay.push("<br>");
 
             const htmlContent = dataToDisplay.join("\n");
-            $(".locations-results").append(htmlContent);
+            $(".addresses-results").append(htmlContent);
         }
 
-        // Set the first location option to be selected by default
-        $(".location-option").first().attr("required", true);
+        // Set the address options to be required
+        $(".address-option").first().attr("required", true);
 
         // Create the submit button
-        $(".locations-results").append(`
-        <button type="submit" class="submit-button location-submit">
-            Submit Selected Location
+        $(".addresses-results").append(`
+        <button type="submit" class="submit-button address-submit">
+            Submit Selected Address
         </button>
         `);
 
-        MicroModal.show("locations-modal");
+        MicroModal.show("addresses-modal");
     }
 
     /*
-        Return an array containing the relevant data from each of the provided locations
+        Return an array containing the relevant data from each of the provided addresses
     */
-    function getRelevantLocationData(locationsJson) {
+    function getRelevantAddressData(addressesJson) {
         const relevantData = [];
 
-        for(const locationJson of locationsJson) {
-            const locationData = {};
-            locationData.address = locationJson.address;
-            locationData.lat = locationJson.lat;
-            locationData.lon = locationJson.lon;
-            locationData.placeId = locationJson.place_id;
+        for(const addressJson of addressesJson) {
+            const addressData = {};
+            addressData.address = addressJson.address;
+            addressData.lat = addressJson.lat;
+            addressData.lon = addressJson.lon;
+            addressData.placeId = addressJson.place_id;
 
-            relevantData.push(locationData);
+            relevantData.push(addressData);
         }
 
         return relevantData;
@@ -131,18 +133,18 @@ function locationSearch() {
     }
 
     /*
-        Use the LocationIQ API to convert the provided location into latitude and longitude coordinates, then fetch the wildlife data
+        Use the LocationIQ API to convert the provided address into latitude and longitude coordinates, then fetch the wildlife data
     */
-    function getLatLonCoordinates(location) {
+    function getLatLonCoordinates(address) {
         const baseUrl = "https://us1.locationiq.com/v1/search.php";
         const params = {
             key: locationIQKey,
-            street: location.street,
-            city: location.city,
-            county: location.county,
-            state: location.state,
-            country: location.country,
-            postalCode: location.postalCode,
+            street: address.street,
+            city: address.city,
+            county: address.county,
+            state: address.state,
+            country: address.country,
+            postalCode: address.postalCode,
             format: "json",
             addressdetails: "1"
         };
@@ -151,74 +153,72 @@ function locationSearch() {
         console.log(`Fetching data from: ${url}`);
         console.log("");
 
-        const errorDescription = "Something went wrong when fetching the locations";
-        return fetchJson(url, errorDescription);
+        return fetchJson(url);
     }
 
     /*
-        Create an event listener for when the "Find Location" button is clicked
+        Create an event listener for when the "Find Address" button is clicked
     */
-    function handleFindLocationClick() {
-        $(".find-location").click(event => {
+    function handleFindAddressClick() {
+        $(".find-address").click(event => {
             event.preventDefault();
 
             // Clear any previous errors
-            $(".find-locations-error").text("");
+            $(".find-addresses-error").text("");
 
-            // Clear any previous locations results
-            $(".locations-results").empty();
+            // Clear any previous addresses results
+            $(".addresses-results").empty();
 
             // Grab user input
-            const userLocation = {};
-            userLocation.street = $("#search-street").val();
-            userLocation.city = $("#search-city").val();
-            userLocation.county = $("#search-county").val();
-            userLocation.state = $("#search-state").val();
-            userLocation.country = $("#search-country").val();
-            userLocation.postalCode = $("#search-postal-code").val();
-
-            if(anyFieldIsPopulated(userLocation)) {
-                getLatLonCoordinates(userLocation)
-                .catch(handleFetchError)
-                .then(locationsJson => {
-                    console.log("----------Locations found using the provided location components----------");
-                    console.log(locationsJson);
+            const userAddress = {};
+            userAddress.street = $("#search-street").val();
+            userAddress.city = $("#search-city").val();
+            userAddress.county = $("#search-county").val();
+            userAddress.state = $("#search-state").val();
+            userAddress.country = $("#search-country").val();
+            userAddress.postalCode = $("#search-postal-code").val();
+            
+            if(anyFieldIsPopulated(userAddress)) {
+                getLatLonCoordinates(userAddress)
+                .then(addressesJson => {
+                    console.log("----------Addresses found using the provided address components----------");
+                    console.log(addressesJson);
                     console.log("");
 
-                    return getRelevantLocationData(locationsJson);
+                    return getRelevantAddressData(addressesJson);
                 })
-                .then(displayLocations)
-                .catch(handleFetchError);
+                .then(displayAddresses)
+                .catch(handleError);
             }
             else {
-                $(".find-locations-error").text("You must fill out at least one of the location fields")
-                console.log("Error while finding location: None of the location fields were filled out");
-                MicroModal.show("locations-modal");
+                $(".find-addresses-error").text("You must fill out at least one of the address fields")
+                console.log("Error while finding address: None of the address fields were filled out");
+                MicroModal.show("addresses-modal");
             }
         });
     }
 
     /*
-        Create an event listener for when the location is submitted from the modal
+        Create an event listener for when the address is submitted from the modal
     */
-    function handleSubmitLocation() {
-        $(".locations-results").submit(event => {
+    function handleSubmitAddress() {
+        $(".addresses-results").submit(event => {
             event.preventDefault();
            
             // Get the selected coordinates
-            const coordinates = $(".locations-results input[name='location']:checked").val();
+            const coordinates = $(".addresses-results input[name='address']:checked").val();
             console.log(`Selected coordinates: ${coordinates}`);
 
-            // Store the selected coordinates in the "Found Location" field
-            $("#found-location").val(coordinates);
+            // Store the selected coordinates in the "Found Address" field
+            $("#found-address").val(coordinates);
 
             // Close the modal
-            MicroModal.close("locations-modal");
+            MicroModal.close("addresses-modal");
         });
     }
 
-    handleFindLocationClick();
-    handleSubmitLocation();
+    handleFindAddressClick();
+    handleSubmitAddress();
 }
 
 /*
@@ -231,12 +231,23 @@ function wildlifeSearch() {
     let allDisplayData = [];
 
     /*
+        Handle all errors that occur
+    */
+    function handleError(error) {
+        const errorMessage = `An error occurred while searching for wildlife: ${error.message}`;
+        console.log(errorMessage);
+        $(".wildlife-error").text(errorMessage);
+        
+        // Remove searching message from page
+        $(".searching").addClass("hidden");
+
+        $(".wildlife-results").removeClass("hidden");
+    }
+
+    /*
         Display the API data to the DOM
     */
-    function displayData() {    
-        // Remove any previous search results from the DOM
-        $(".wildlife-result").remove();
-
+    function displayData() {
         for(let singleData of allDisplayData) {
             let displayedPhotos = "";
             for(let photoUrl of singleData.photoUrls) {
@@ -340,8 +351,6 @@ function wildlifeSearch() {
             origin: "*"
         }
 
-        const errorDescription = "Something went wrong while fetching the Wikipedia data";
-
         const promises = [];
         
         // Break up the display data into groups of 20, to make fewer calls to the MediaWiki API
@@ -360,7 +369,7 @@ function wildlifeSearch() {
             const url = baseUrl + "?" + queryParams;
             
             console.log(`Fetching data from URL: ${url}`);
-            promises.push(fetchJson(url, errorDescription));
+            promises.push(fetchJson(url));
         }
 
         return Promise.all(promises);
@@ -449,10 +458,8 @@ function wildlifeSearch() {
         const queryParams = formatQueryParams(params);
         
         const url = baseUrl + "?" + queryParams;
-
-        const errorDescription = `Something went wrong while fetching page ${page} of the wildlife data`;
         console.log(`Fetching data from URL: ${url}`);
-        return fetchJson(url, errorDescription);
+        return fetchJson(url);
     }
 
     /*
@@ -474,7 +481,7 @@ function wildlifeSearch() {
                 
                 filterWildlifeData(wildlifeJson);
             })
-            .catch(handleFetchError);
+            .catch(handleError);
 
             // If the HTTP Response doesn't have enough observations to meet its page limit, then all following pages of observations will be empty.
             if(numOrganismsThisPage < wildlifePerPage) {
@@ -511,12 +518,16 @@ function wildlifeSearch() {
             // Hide the search results section from the page
             $(".wildlife-results").addClass("hidden");
 
+            // Clear any previous search results
+            allDisplayData = [];
+            $(".wildlife-result").remove();
+
             // Clear any previous errors
             $(".wildlife-error").text("");
 
-            if($("#found-location").val() === "") {
-                console.log("Error: No location was provided before beginning the wildlife search");
-                $(".wildlife-error").text("Error: You must find a location before searching for wildlife");
+            if($("#found-address").val() === "") {
+                console.log("Error: No address was provided before beginning the wildlife search");
+                $(".wildlife-error").text("Error: You must find an address before searching for wildlife");
                 $(".wildlife-results").removeClass("hidden");
             }
             else {
@@ -524,9 +535,9 @@ function wildlifeSearch() {
                 $(".searching").removeClass("hidden");
 
                 // Grab the user input
-                const locationCoordinates = $("#found-location").val();
-                const latitude = locationCoordinates.split(",")[0];
-                const longitude = locationCoordinates.split(",")[1];
+                const addressCoordinates = $("#found-address").val();
+                const latitude = addressCoordinates.split(",")[0];
+                const longitude = addressCoordinates.split(",")[1];
 
                 const wildlifeTypes = getWildlifeTypes();
                 const iconicTaxa = convertWildlifeTypesToTaxa(wildlifeTypes);
@@ -564,8 +575,8 @@ function wildlifeSearch() {
                     console.log("Display data:");
                     console.log(allDisplayData);
                 })
-                .catch(handleFetchError)
-                .then(displayData);
+                .then(displayData)
+                .catch(handleError);
             }
         });
     }
@@ -610,7 +621,7 @@ function loadPages() {
 
 $(function() {
     MicroModal.init();
-    locationSearch();
+    addressSearch();
     wildlifeSearch();
     loadPages();
 });

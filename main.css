@@ -135,7 +135,7 @@ header {
     border: 0;
 }
 
-.locations-results input[type="radio"] {
+.addresses-results input[type="radio"] {
     display: inline-block;
     margin-top: 15px;
 }
