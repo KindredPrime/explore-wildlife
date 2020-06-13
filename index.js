@@ -236,7 +236,7 @@ function wildlifeSearch() {
     function handleError(error) {
         const errorMessage = `An error occurred while searching for wildlife: ${error.message}`;
         console.log(errorMessage);
-        $(".wildlife-error").text(errorMessage);
+        $(".wildlife-status").text(errorMessage);
         
         // Remove searching message from page
         $(".searching").addClass("hidden");
@@ -248,29 +248,31 @@ function wildlifeSearch() {
         Display the API data to the DOM
     */
     function displayData() {
-        for(let singleData of allDisplayData) {
-            let displayedPhotos = "";
-            for(let photoUrl of singleData.photoUrls) {
-                const img = `<img src="${photoUrl}" alt="${singleData.name}" class="organism-photo">`;
-                displayedPhotos = displayedPhotos + img;
-            }
-            $(".wildlife-results").append(`
-            <section class="wildlife-result">
-                <section>
-                    ${displayedPhotos}
-                </section>
-
-                <h3>${singleData.name}</h3>
-                <p>${singleData.wikiIntro}</p>
-                <a href="${singleData.wikiUrl}" target="_blank">${singleData.wikiUrl}</a>
-            </section>
-            `);
-        }
-
         if(allDisplayData.length === 0) {
-            $(".wildlife-results").append(`
-            <p>No wildlife found</p>
-            `);
+            $(".wildlife-status").text("No wildlife found");
+        }
+        else {
+            for(let singleData of allDisplayData) {
+                let displayedPhotos = "";
+                for(let photoUrl of singleData.photoUrls) {
+                    const img = `<img src="${photoUrl}" alt="${singleData.name}" class="organism-photo">`;
+                    displayedPhotos = displayedPhotos + img;
+                }
+                $(".wildlife-results").append(`
+                <section class="wildlife-result">
+                    <section>
+                        ${displayedPhotos}
+                    </section>
+
+                    <h3>${singleData.name}</h3>
+                    <p>${singleData.wikiIntro}</p>
+                    <a href="${singleData.wikiUrl}" target="_blank">${singleData.wikiUrl}</a>
+                </section>
+                `);
+            }
+
+            // Reset the search data
+            allDisplayData = [];
         }
 
         // Remove searching message from page
@@ -278,9 +280,6 @@ function wildlifeSearch() {
 
         // Show the search results
         $(".wildlife-results").removeClass("hidden");
-
-        // Reset the search data
-        allDisplayData = [];
     }
 
     /*
@@ -319,18 +318,21 @@ function wildlifeSearch() {
         Break up the provided array into separate arrays of the provided length.  The provided array is not modified.
     */
     function breakUpArray(arr, subLength) {
-        const quotient = Math.floor(arr.length / subLength);
-        const remainder = arr.length % subLength;
         const brokenUpArrays = [];
 
-        for(let i = 0; i < quotient; i++) {
-            const startIndex = i * subLength;
-            const endIndex = startIndex + subLength;
-            brokenUpArrays.push(arr.slice(startIndex, endIndex));
+        if(arr.length > 0) {
+            const quotient = Math.floor(arr.length / subLength);
+            const remainder = arr.length % subLength;
+    
+            for(let i = 0; i < quotient; i++) {
+                const startIndex = i * subLength;
+                const endIndex = startIndex + subLength;
+                brokenUpArrays.push(arr.slice(startIndex, endIndex));
+            }
+    
+            // Store the remainder arrays
+            brokenUpArrays.push(arr.slice(-remainder));
         }
-
-        // Store the remainder arrays
-        brokenUpArrays.push(arr.slice(-remainder));
 
         return brokenUpArrays;
     }
@@ -523,11 +525,11 @@ function wildlifeSearch() {
             $(".wildlife-result").remove();
 
             // Clear any previous errors
-            $(".wildlife-error").text("");
+            $(".wildlife-status").text("");
 
             if($("#found-address").val() === "") {
                 console.log("Error: No address was provided before beginning the wildlife search");
-                $(".wildlife-error").text("Error: You must find an address before searching for wildlife");
+                $(".wildlife-status").text("Error: You must find an address before searching for wildlife");
                 $(".wildlife-results").removeClass("hidden");
             }
             else {
