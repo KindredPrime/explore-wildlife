@@ -120,16 +120,15 @@ function addressSearch() {
     }
 
     /*
-        Return true if at least one of the provided fields has been populated
+        Return true if enough of the provided address fields are populated
     */
-    function anyFieldIsPopulated(fieldsObject) {
-        for(const field of Object.values(fieldsObject)) {
-            if(field != "") {
-                return true;
-            }
+    function enoughFieldsArePopulated(fieldsObject) {
+        if(fieldsObject.street != "") {
+            return true;
         }
-
-        return false;
+        else {
+            return false;
+        }
     }
 
     /*
@@ -178,7 +177,7 @@ function addressSearch() {
             userAddress.country = $("#search-country").val();
             userAddress.postalCode = $("#search-postal-code").val();
             
-            if(anyFieldIsPopulated(userAddress)) {
+            if(enoughFieldsArePopulated(userAddress)) {
                 getLatLonCoordinates(userAddress)
                 .then(addressesJson => {
                     console.log("----------Addresses found using the provided address components----------");
@@ -191,8 +190,8 @@ function addressSearch() {
                 .catch(handleError);
             }
             else {
-                $(".find-addresses-error").text("You must fill out at least one of the address fields")
-                console.log("Error while finding address: None of the address fields were filled out");
+                $(".find-addresses-error").text('You must fill out the "Street Name" field.');
+                console.log(`Error while finding address: The "Street Name" field wasn't filled out.`);
                 MicroModal.show("addresses-modal");
             }
         });
