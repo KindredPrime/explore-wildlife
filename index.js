@@ -204,6 +204,14 @@ function addressSearch() {
     }
 
     /*
+        Enable the user to fill out the wildlife search form
+    */
+    function enableWildlifeSearch() {
+        // Enable all form elements in the wildlife search except for the "Found Address" field
+        $(".wildlife-form *:disabled").not("#found-address").removeAttr("disabled");
+    }
+
+    /*
         Create an event listener for when the address is submitted from the modal
     */
     function handleSubmitAddress() {
@@ -219,6 +227,9 @@ function addressSearch() {
 
             // Close the modal
             MicroModal.close("addresses-modal");
+
+            // Enable the wildlife search form
+            enableWildlifeSearch();
         });
     }
 
@@ -536,68 +547,61 @@ function wildlifeSearch() {
 
             // Clear any previous errors
             $(".wildlife-status").text("");
+            
+            // Tell the user the search is running
+            $(".searching").removeClass("hidden");
 
-            if($("#found-address").val() === "") {
-                console.log("Error: No address was provided before beginning the wildlife search");
-                $(".wildlife-status").text("Error: You must find an address before searching for wildlife");
-                $(".wildlife-results").removeClass("hidden");
-            }
-            else {
-                // Tell the user the search is running
-                $(".searching").removeClass("hidden");
+            // Grab the user input
+            const addressCoordinates = $("#found-address").val();
+            const latitude = addressCoordinates.split(",")[0];
+            const longitude = addressCoordinates.split(",")[1];
 
-                // Grab the user input
-                const addressCoordinates = $("#found-address").val();
-                const latitude = addressCoordinates.split(",")[0];
-                const longitude = addressCoordinates.split(",")[1];
+            const wildlifeTypes = getWildlifeTypes();
+            const iconicTaxa = convertWildlifeTypesToTaxa(wildlifeTypes);
 
-                const wildlifeTypes = getWildlifeTypes();
-                const iconicTaxa = convertWildlifeTypesToTaxa(wildlifeTypes);
+            const radius = $("#search-radius").val();
+            const name = $("#organism-name").val();
+            const startDate = $("#search-start").val();
+            const endDate = $("#search-end").val();
 
-                const radius = $("#search-radius").val();
-                const name = $("#organism-name").val();
-                const startDate = $("#search-start").val();
-                const endDate = $("#search-end").val();
+            let allDisplayData = [];
 
-                let allDisplayData = [];
+            getAllWildlifeData(latitude, longitude, radius, iconicTaxa, name, startDate, endDate)
+            .then(filteredData => {
+                allDisplayData = filteredData;
 
-                getAllWildlifeData(latitude, longitude, radius, iconicTaxa, name, startDate, endDate)
-                .then(filteredData => {
-                    allDisplayData = filteredData;
+                const wikiUrls = allDisplayData.map(data => data.wikiUrl);
+                return getWikipediaData(wikiUrls);
+            })
+            .then(promiseResults => {
+                console.log(`----------Wikipedia Intros Found----------`);
+                // Loop through each MediaWiki Response
+                for(let resultCount = 0; resultCount < promiseResults.length; resultCount++) {
+                    const wikipediaJson = promiseResults[resultCount];
+                    console.log(wikipediaJson);
+                    console.log("");
 
-                    const wikiUrls = allDisplayData.map(data => data.wikiUrl);
-                    return getWikipediaData(wikiUrls);
-                })
-                .then(promiseResults => {
-                    console.log(`----------Wikipedia Intros Found----------`);
-                    // Loop through each MediaWiki Response
-                    for(let resultCount = 0; resultCount < promiseResults.length; resultCount++) {
-                        const wikipediaJson = promiseResults[resultCount];
-                        console.log(wikipediaJson);
-                        console.log("");
+                    // Each MediaWiki Response has 20 Wikipedia pages in it (except the last one, which may have fewer)
+                    const pageBracket = resultCount * 20;
 
-                        // Each MediaWiki Response has 20 Wikipedia pages in it (except the last one, which may have fewer)
-                        const pageBracket = resultCount * 20;
-
-                        // Store the page intro that corresponds to each organism in the page bracket
-                        const wikipediaPages = wikipediaJson.query.pages;
-                        for(let i = 0; i < wikipediaPages.length; i++) {
-                            // Grab the ith organism of the current page bracket
-                            const organismData = allDisplayData[pageBracket + i];
-                            
-                            // Grab the organism's page title and add spaces back into it, so it matches the format of the JSON page titles
-                            const wikiUrl = organismData.wikiUrl;
-                            const organismPageTitle = getPageTitle(wikiUrl).replace(/_/g, " ");
-        
-                            organismData.wikiIntro = wikipediaPages.find(element => element.title === organismPageTitle).extract;
-                        }
+                    // Store the page intro that corresponds to each organism in the page bracket
+                    const wikipediaPages = wikipediaJson.query.pages;
+                    for(let i = 0; i < wikipediaPages.length; i++) {
+                        // Grab the ith organism of the current page bracket
+                        const organismData = allDisplayData[pageBracket + i];
+                        
+                        // Grab the organism's page title and add spaces back into it, so it matches the format of the JSON page titles
+                        const wikiUrl = organismData.wikiUrl;
+                        const organismPageTitle = getPageTitle(wikiUrl).replace(/_/g, " ");
+    
+                        organismData.wikiIntro = wikipediaPages.find(element => element.title === organismPageTitle).extract;
                     }
+                }
 
-                    return allDisplayData;
-                })
-                .then(displayData)
-                .catch(handleError);
-            }
+                return allDisplayData;
+            })
+            .then(displayData)
+            .catch(handleError);
         });
     }
 
