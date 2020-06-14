@@ -699,10 +699,12 @@ function wildlifeSearch() {
                     return allDisplayData;
                 })
                 .then(displayData)
-                .catch(handleError);
+                .catch(handleError)
+                .finally(endSearch);
             }
-
-            endSearch();
+            else {
+                endSearch();
+            }
         });
     }
 

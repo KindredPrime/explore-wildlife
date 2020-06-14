@@ -43,7 +43,7 @@ header {
     margin-bottom: 5px;
 }
 
-.search-form input, .search-form fieldset{
+.search-form input, .search-form fieldset, .search-form select{
     margin-bottom: 10px;
 }
 
