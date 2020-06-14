@@ -1,6 +1,60 @@
 "use strict";
 
 /*
+    Set default values for the "Start Date" and "End Date" fields
+*/
+function setDefaultDates() {
+    /*
+        Return the day of the month of the provided date as a two-digit number
+
+        Example:
+            First day of month = "01"
+    */
+    function getTwoDigitDay(date) {
+        return date.getDate().toString().padStart(2, "0");
+    }
+
+    /*
+        Return the month of the provided date as a two-digit number
+
+        Example:
+            January = "01"
+    */
+    function getTwoDigitMonth(date) {
+        return (date.getMonth() + 1).toString().padStart(2, "0")
+    }
+
+    /*
+        Set the start date default to one year ago
+    */
+    function setStartDate() {
+        const lastYearDate = new Date();
+        const lastYear = lastYearDate.getFullYear() - 1;
+        lastYearDate.setFullYear(lastYear);
+        const month = getTwoDigitMonth(lastYearDate);
+        const day = getTwoDigitDay(lastYearDate);
+
+        $("#search-start").val(`${lastYear}-${month}-${day}`);
+    }
+
+    /*
+        Set the end date default to the current date
+    */
+    function setEndDate() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = getTwoDigitMonth(today);
+        const day = getTwoDigitDay(today);
+
+        // YYYY-MM-DD
+        $("#search-end").val(`${year}-${month}-${day}`);
+    }
+
+    setStartDate();
+    setEndDate();
+}
+
+/*
     Convert the provided parameters into an HTTP-friendly format
 */
 function formatQueryParams(params) {
@@ -251,11 +305,6 @@ function wildlifeSearch() {
         const errorMessage = `An error occurred while searching for wildlife: ${error.message}`;
         console.log(errorMessage);
         $(".wildlife-status").text(errorMessage);
-        
-        // Remove searching message from page
-        $(".searching").addClass("hidden");
-
-        $(".wildlife-results").removeClass("hidden");
     }
 
     /*
@@ -288,12 +337,6 @@ function wildlifeSearch() {
                 `);
             }
         }
-
-        // Remove searching message from page
-        $(".searching").addClass("hidden");
-
-        // Show the search results
-        $(".wildlife-results").removeClass("hidden");
     }
 
     /*
@@ -436,27 +479,6 @@ function wildlifeSearch() {
     }
 
     /*
-        Convert the wildlife types to the parameters expected by the iNaturalist API
-    */
-    function convertWildlifeTypesToTaxa(wildlifeTypes) {
-        const wildlifeIconicTaxaConversion = {
-            plants: "Plantae",
-            mollusks: "Mollusca",
-            reptiles: "Reptilia",
-            birds: "Aves",
-            amphibians: "Amphibia",
-            fish: "Actinopterygii",
-            mammals: "Mammalia",
-            insects: "Insecta",
-            arachnids: "Arachnida",
-            fungi: "Fungi",
-            unknown: "Unknown"
-        };
-        
-        return wildlifeTypes.map(wildlifeType => wildlifeIconicTaxaConversion[wildlifeType]);
-    }
-
-    /*
         Fetch a page of wildlife data from the iNaturalist API
     */
     function getPageOfWildlifeData(latitude, longitude, radius, iconicTaxa, name, startDate, endDate, page=1) {
@@ -517,6 +539,80 @@ function wildlifeSearch() {
     }
 
     /*
+        Convert the HTML date string into a Date object
+    */
+    function parseDate(dateString) {
+        // yyyy-mm-dd
+        const dateComponents = dateString.split("-");
+        const year = dateComponents[0];
+        // For Date objects, January="0", not "1"
+        const month = dateComponents[1] - 1;
+        const day = dateComponents[2];
+
+        return new Date(year, month, day);
+    }
+
+    /*
+        Update DOM to reflect the search results
+    */
+    function endSearch() {
+        // Remove searching message from page
+        $(".searching").addClass("hidden");
+            
+        $(".wildlife-results").removeClass("hidden");
+    }
+
+    /*
+        Return true if the provided dates pass all tests
+    */
+    function testDates(startString, endString) {
+        // Convert the strings into Date objects
+        const startDate = parseDate(startString);
+        const endDate = parseDate(endString);
+        const currentDate = new Date();
+
+        // Fail if either date is in the future
+        if(startDate > currentDate || endDate > currentDate) {
+            console.log(`Error: The user entered a future date.`);
+            console.log("");
+            $(".wildlife-status").text(`Unable to search: You cannot use future dates for your search.`);
+
+            return false;
+        }
+        // Fail if the start date is after the end date
+        else if(startDate > endDate) {
+            console.log("Error: The user entered a start date that was after the end date.");
+            console.log("");
+            $(".wildlife-status").text("Unable to search: Your start date cannot be after your end date.");
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /*
+        Convert the wildlife types to the parameters expected by the iNaturalist API
+    */
+    function convertWildlifeTypesToTaxa(wildlifeTypes) {
+        const wildlifeIconicTaxaConversion = {
+            plants: "Plantae",
+            mollusks: "Mollusca",
+            reptiles: "Reptilia",
+            birds: "Aves",
+            amphibians: "Amphibia",
+            fish: "Actinopterygii",
+            mammals: "Mammalia",
+            insects: "Insecta",
+            arachnids: "Arachnida",
+            fungi: "Fungi",
+            unknown: "Unknown"
+        };
+        
+        return wildlifeTypes.map(wildlifeType => wildlifeIconicTaxaConversion[wildlifeType]);
+    }
+
+    /*
         Return an array of values containing which "Types of Wildlife" checkboxes have been checked
     */
     function getWildlifeTypes() {
@@ -564,44 +660,49 @@ function wildlifeSearch() {
             const startDate = $("#search-start").val();
             const endDate = $("#search-end").val();
 
-            let allDisplayData = [];
+            const datesAreValid = testDates(startDate, endDate);
+            if(datesAreValid) {
+                let allDisplayData = [];
 
-            getAllWildlifeData(latitude, longitude, radius, iconicTaxa, name, startDate, endDate)
-            .then(filteredData => {
-                allDisplayData = filteredData;
-
-                const wikiUrls = allDisplayData.map(data => data.wikiUrl);
-                return getWikipediaData(wikiUrls);
-            })
-            .then(promiseResults => {
-                console.log(`----------Wikipedia Intros Found----------`);
-                // Loop through each MediaWiki Response
-                for(let resultCount = 0; resultCount < promiseResults.length; resultCount++) {
-                    const wikipediaJson = promiseResults[resultCount];
-                    console.log(wikipediaJson);
-                    console.log("");
-
-                    // Each MediaWiki Response has 20 Wikipedia pages in it (except the last one, which may have fewer)
-                    const pageBracket = resultCount * 20;
-
-                    // Store the page intro that corresponds to each organism in the page bracket
-                    const wikipediaPages = wikipediaJson.query.pages;
-                    for(let i = 0; i < wikipediaPages.length; i++) {
-                        // Grab the ith organism of the current page bracket
-                        const organismData = allDisplayData[pageBracket + i];
-                        
-                        // Grab the organism's page title and add spaces back into it, so it matches the format of the JSON page titles
-                        const wikiUrl = organismData.wikiUrl;
-                        const organismPageTitle = getPageTitle(wikiUrl).replace(/_/g, " ");
+                getAllWildlifeData(latitude, longitude, radius, iconicTaxa, name, startDate, endDate)
+                .then(filteredData => {
+                    allDisplayData = filteredData;
     
-                        organismData.wikiIntro = wikipediaPages.find(element => element.title === organismPageTitle).extract;
+                    const wikiUrls = allDisplayData.map(data => data.wikiUrl);
+                    return getWikipediaData(wikiUrls);
+                })
+                .then(promiseResults => {
+                    console.log(`----------Wikipedia Intros Found----------`);
+                    // Loop through each MediaWiki Response
+                    for(let resultCount = 0; resultCount < promiseResults.length; resultCount++) {
+                        const wikipediaJson = promiseResults[resultCount];
+                        console.log(wikipediaJson);
+                        console.log("");
+    
+                        // Each MediaWiki Response has 20 Wikipedia pages in it (except the last one, which may have fewer)
+                        const pageBracket = resultCount * 20;
+    
+                        // Store the page intro that corresponds to each organism in the page bracket
+                        const wikipediaPages = wikipediaJson.query.pages;
+                        for(let i = 0; i < wikipediaPages.length; i++) {
+                            // Grab the ith organism of the current page bracket
+                            const organismData = allDisplayData[pageBracket + i];
+                            
+                            // Grab the organism's page title and add spaces back into it, so it matches the format of the JSON page titles
+                            const wikiUrl = organismData.wikiUrl;
+                            const organismPageTitle = getPageTitle(wikiUrl).replace(/_/g, " ");
+        
+                            organismData.wikiIntro = wikipediaPages.find(element => element.title === organismPageTitle).extract;
+                        }
                     }
-                }
+    
+                    return allDisplayData;
+                })
+                .then(displayData)
+                .catch(handleError);
+            }
 
-                return allDisplayData;
-            })
-            .then(displayData)
-            .catch(handleError);
+            endSearch();
         });
     }
 
@@ -645,6 +746,7 @@ function loadPages() {
 
 $(function() {
     MicroModal.init();
+    setDefaultDates();
     addressSearch();
     wildlifeSearch();
     loadPages();
