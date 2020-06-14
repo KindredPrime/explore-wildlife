@@ -228,8 +228,6 @@ function wildlifeSearch() {
     // The number of observations returned by the iNaturalist API per page of observations
     const wildlifePerPage = 200;
 
-    let allDisplayData = [];
-
     /*
         Handle all errors that occur
     */
@@ -245,17 +243,20 @@ function wildlifeSearch() {
     }
 
     /*
-        Display the API data to the DOM
+        Display the wildlife data to the DOM
     */
-    function displayData() {
-        if(allDisplayData.length === 0) {
-            $(".wildlife-status").text("No wildlife found");
+    function displayData(data) {
+        console.log("Wildlife data:");
+        console.log(data);
+
+        if(data.length === 0) {
+            $(".wildlife-status").text("No wildlife observations found");
         }
         else {
-            for(let singleData of allDisplayData) {
+            for(let organism of data) {
                 let displayedPhotos = "";
-                for(let photoUrl of singleData.photoUrls) {
-                    const img = `<img src="${photoUrl}" alt="${singleData.name}" class="organism-photo">`;
+                for(let photoUrl of organism.photoUrls) {
+                    const img = `<img src="${photoUrl}" alt="${organism.name}" class="organism-photo">`;
                     displayedPhotos = displayedPhotos + img;
                 }
                 $(".wildlife-results").append(`
@@ -264,15 +265,12 @@ function wildlifeSearch() {
                         ${displayedPhotos}
                     </section>
 
-                    <h3>${singleData.name}</h3>
-                    <p>${singleData.wikiIntro}</p>
-                    <a href="${singleData.wikiUrl}" target="_blank">${singleData.wikiUrl}</a>
+                    <h3>${organism.name}</h3>
+                    <p>${organism.wikiIntro}</p>
+                    <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}</a>
                 </section>
                 `);
             }
-
-            // Reset the search data
-            allDisplayData = [];
         }
 
         // Remove searching message from page
@@ -306,12 +304,10 @@ function wildlifeSearch() {
     }
 
     /*
-        Pull the page title from the organism's wikipedia URL
+        Return the page title of the provided Wikipedia URL
     */
-    function getPageTitle(organismData) {
-        const url = organismData.wikiUrl;
-        
-        return url.split("/").pop();
+    function getPageTitle(wikiUrl) {
+        return wikiUrl.split("/").pop();
     }
 
     /*
@@ -338,9 +334,9 @@ function wildlifeSearch() {
     }
 
     /*
-        Fetch the Wikipedia data, then call the display function
+        Fetch the intro sections from each of the provided Wikipedia URLs
     */
-    function getWikipediaData() {
+    function getWikipediaData(wikiUrls) {
         const baseUrl = "https://en.wikipedia.org/w/api.php";
         const params = {
             action: "query",
@@ -355,15 +351,15 @@ function wildlifeSearch() {
 
         const promises = [];
         
-        // Break up the display data into groups of 20, to make fewer calls to the MediaWiki API
-        const displayDataGroups = breakUpArray(allDisplayData, 20);
+        // Break up the URLs into groups of 20, to make fewer calls to the MediaWiki API
+        const wikiUrlGroups = breakUpArray(wikiUrls, 20);
         
-        // Loop through each group of organisms in the display data
-        for(const displayDataGroup of displayDataGroups) {
-            // Combine all the organism's Wikipedia URLs into page titles separated by "|"
+        for(const wikiUrlGroup of wikiUrlGroups) {
+            // Combine all the URLs in this group into page titles separated by "|"
             const pageTitles = [];
-            for(const organismData of displayDataGroup) {
-                pageTitles.push(getPageTitle(organismData));
+            for(const wikiUrl of wikiUrlGroup) {
+                const pageTitle = getPageTitle(wikiUrl);
+                pageTitles.push(pageTitle);
             }
             params.titles = pageTitles.join("|");
 
@@ -373,6 +369,7 @@ function wildlifeSearch() {
             console.log(`Fetching data from URL: ${url}`);
             promises.push(fetchJson(url));
         }
+        console.log("");
 
         return Promise.all(promises);
     }
@@ -381,6 +378,8 @@ function wildlifeSearch() {
         Remove invalid data from the HTTP Response JSON
     */
     function filterWildlifeData(wildlifeJson) {
+        const allDisplayData = [];
+
         for(let observation of wildlifeJson.results) {
             const organism = observation.taxon;
 
@@ -415,6 +414,9 @@ function wildlifeSearch() {
                 console.log(`No wikipedia link for ${organism.preferred_common_name}`);
             }
         }
+        console.log("");
+
+        return allDisplayData;
     }
 
     /*
@@ -470,6 +472,7 @@ function wildlifeSearch() {
     async function getAllWildlifeData(latitude, longitude, radius, iconicTaxa, name, startDate, endDate) {
         let page = 1;
         let numOrganismsThisPage = 0;
+        const allDisplayData = [];
 
         // Loop through all pages of wildlife data
         while(true) {
@@ -481,7 +484,8 @@ function wildlifeSearch() {
 
                 numOrganismsThisPage = wildlifeJson.results.length;
                 
-                filterWildlifeData(wildlifeJson);
+                const newDisplayData = filterWildlifeData(wildlifeJson);
+                allDisplayData.push(...newDisplayData);
             })
             .catch(handleError);
 
@@ -492,6 +496,8 @@ function wildlifeSearch() {
 
             page++;
         }
+
+        return allDisplayData;
     }
 
     /*
@@ -521,7 +527,6 @@ function wildlifeSearch() {
             $(".wildlife-results").addClass("hidden");
 
             // Clear any previous search results
-            allDisplayData = [];
             $(".wildlife-result").remove();
 
             // Clear any previous errors
@@ -549,14 +554,22 @@ function wildlifeSearch() {
                 const startDate = $("#search-start").val();
                 const endDate = $("#search-end").val();
 
+                let allDisplayData = [];
+
                 getAllWildlifeData(latitude, longitude, radius, iconicTaxa, name, startDate, endDate)
-                .then(getWikipediaData)
+                .then(filteredData => {
+                    allDisplayData = filteredData;
+
+                    const wikiUrls = allDisplayData.map(data => data.wikiUrl);
+                    return getWikipediaData(wikiUrls);
+                })
                 .then(promiseResults => {
                     console.log(`----------Wikipedia Intros Found----------`);
                     // Loop through each MediaWiki Response
                     for(let resultCount = 0; resultCount < promiseResults.length; resultCount++) {
                         const wikipediaJson = promiseResults[resultCount];
                         console.log(wikipediaJson);
+                        console.log("");
 
                         // Each MediaWiki Response has 20 Wikipedia pages in it (except the last one, which may have fewer)
                         const pageBracket = resultCount * 20;
@@ -568,14 +581,14 @@ function wildlifeSearch() {
                             const organismData = allDisplayData[pageBracket + i];
                             
                             // Grab the organism's page title and add spaces back into it, so it matches the format of the JSON page titles
-                            const organismPageTitle = getPageTitle(organismData).replace(/_/g, " ");
+                            const wikiUrl = organismData.wikiUrl;
+                            const organismPageTitle = getPageTitle(wikiUrl).replace(/_/g, " ");
         
                             organismData.wikiIntro = wikipediaPages.find(element => element.title === organismPageTitle).extract;
                         }
                     }
-            
-                    console.log("Display data:");
-                    console.log(allDisplayData);
+
+                    return allDisplayData;
                 })
                 .then(displayData)
                 .catch(handleError);
