@@ -96,6 +96,9 @@ function addressSearch() {
             Submit Selected Address
         </button>
         `);
+            
+        // Remove "Searching..." message
+        $(".find-address").text("Find Address");
 
         MicroModal.show("addresses-modal");
     }
@@ -178,6 +181,9 @@ function addressSearch() {
             userAddress.postalCode = $("#search-postal-code").val();
             
             if(enoughFieldsArePopulated(userAddress)) {
+                // Tell the user the search is running
+                $(".find-address").text("Searching...");
+
                 getLatLonCoordinates(userAddress)
                 .then(addressesJson => {
                     console.log("----------Addresses found using the provided address components----------");
