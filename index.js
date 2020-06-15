@@ -458,6 +458,26 @@ function wildlifeSearch() {
     }
 
     /*
+        Return a new array that merges all the duplicate organisms from the provided display data
+    */
+    function mergeDuplicateOrganismData(allDisplayData) {
+        const mergedDuplicates = [];
+        for(const organismData of allDisplayData) {
+            const existingData = mergedDuplicates.find(element => element.name === organismData.name);
+
+            // Add organismData's sightings to the existing sightings of that organism in mergedDuplicates
+            if(existingData != undefined) {
+                existingData.sightings.push(...organismData.sightings);
+            }
+            else {// Not a duplicate organism; add all of its data to the mergedDuplicates array
+                mergedDuplicates.push(organismData)
+            }
+        }
+
+        return mergedDuplicates;
+    }
+
+    /*
         Return the sighting data of the provided iNaturalist API observation
     */
     function getSightingData(iNatObservation) {
@@ -469,51 +489,42 @@ function wildlifeSearch() {
     }
 
     /*
-        Remove invalid data from the HTTP Response JSON
+        Return the useful data from the HTTP Response JSON
     */
-    function filterWildlifeData(wildlifeJson) {
-        const allDisplayData = [];
+    function getRelevantData(wildlifeJson) {
+        const relevantData = [];
 
         for(let iNatObservation of wildlifeJson.results) {
             const organism = iNatObservation.taxon;
 
-            // Ignore wildlife data that doesn't have a wikipedia URL, for now
+            // Ignore wildlife data that doesn't have a wikipedia URL
             if (organism.wikipedia_url != null) {
-                const foundData = allDisplayData.find(element => element.name === organism.preferred_common_name);
+                const organismData = {};
 
-                // If the organism has already been stored, add this iNaturalist observation's sighting data to that organism's list of sightings
-                if(foundData != undefined) {
-                    const sighting = getSightingData(iNatObservation);
-                    foundData.sightings.push(sighting);
+                /*
+                    Store the preferred common name if the iNaturalist observation has it, otherwise store the organism's scientific name
+                */
+                if(typeof organism.preferred_common_name !== "undefined") {
+                    organismData.name = organism.preferred_common_name;
                 }
                 else {
-                    const organismData = {};
-
-                    /*
-                        Store the preferred common name if the iNaturalist observation has it, otherwise store the organism's scientific name
-                    */
-                    if(typeof organism.preferred_common_name !== "undefined") {
-                        organismData.name = organism.preferred_common_name;
-                    }
-                    else {
-                        organismData.name = organism.name;
-                    }
-                    
-                    organismData.sightings = [];
-                    const sighting = getSightingData(iNatObservation);
-                    organismData.sightings.push(sighting);
-
-                    organismData.wikiUrl = organism.wikipedia_url;
-
-                    allDisplayData.push(organismData);
+                    organismData.name = organism.name;
                 }
+                
+                organismData.sightings = [];
+                const sighting = getSightingData(iNatObservation);
+                organismData.sightings.push(sighting);
+
+                organismData.wikiUrl = organism.wikipedia_url;
+
+                relevantData.push(organismData);
             }
             else {
                 console.log(`No wikipedia link for ${organism.preferred_common_name}`);
             }
         }
 
-        return allDisplayData;
+        return relevantData;
     }
 
     /*
@@ -560,7 +571,7 @@ function wildlifeSearch() {
 
                 numOrganismsThisPage = wildlifeJson.results.length;
                 
-                const newDisplayData = filterWildlifeData(wildlifeJson);
+                const newDisplayData = getRelevantData(wildlifeJson);
                 allDisplayData.push(...newDisplayData);
             })
             .catch(handleError);
@@ -573,7 +584,8 @@ function wildlifeSearch() {
             page++;
         }
 
-        return allDisplayData;
+        const mergedDuplicates = mergeDuplicateOrganismData(allDisplayData);
+        return mergedDuplicates;
     }
 
     /*
