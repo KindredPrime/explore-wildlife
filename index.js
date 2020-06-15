@@ -230,9 +230,19 @@ function addressSearch() {
             userAddress.street = $("#search-street").val();
             userAddress.city = $("#search-city").val();
             userAddress.county = $("#search-county").val();
-            userAddress.state = $("#search-state").val();
-            userAddress.country = $("#search-country").val();
             userAddress.postalCode = $("#search-postal-code").val();
+
+            userAddress.country = $("#search-country").val();
+            if(userAddress.country === "United States of America") {
+                userAddress.state = $("#search-state").val();
+            }
+            else { // Ignore the "US State or Territory" field if the country isn't the United States of America
+                userAddress.state = "";
+            }
+
+            console.log("User-provided address: ");
+            console.log(userAddress);
+            console.log("");
             
             if(enoughFieldsArePopulated(userAddress)) {
                 // Tell the user the search is running
