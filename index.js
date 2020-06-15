@@ -328,16 +328,31 @@ function wildlifeSearch() {
             $(".wildlife-status").text("No wildlife observations found");
         }
         else {
-            for(let organism of data) {
-                let displayedPhotos = "";
-                for(let photoUrl of organism.photoUrls) {
-                    const img = `<img src="${photoUrl}" alt="${organism.name}" class="organism-photo">`;
-                    displayedPhotos = displayedPhotos + img;
+            for(const organism of data) {
+                const photos = [];
+                for(const sighting of organism.sightings) {
+                    for(const photoUrl of sighting.photoUrls) {
+                        const photo = {};
+                        photo.img = `<img src="${photoUrl}" alt="${organism.name}">`;
+                        photo.caption = `<p>Observed by iNaturalist user ${sighting.observer} on ${sighting.date}</p>`;
+                        photos.push(photo);
+                    }
                 }
+
+                // Convert the photos to HTML
+                const photosAsHtml = photos.map(photo => {
+                    return `
+                    <div class="organism-photo">
+                        ${photo.img}
+                        ${photo.caption}
+                    </div>
+                    `;
+                }).join("\n");
+
                 $(".wildlife-results").append(`
                 <section class="wildlife-result">
-                    <section>
-                        ${displayedPhotos}
+                    <section class="sightings">
+                        ${photosAsHtml}
                     </section>
 
                     <h3>${organism.name}</h3>
@@ -438,9 +453,19 @@ function wildlifeSearch() {
             console.log(`Fetching data from URL: ${url}`);
             promises.push(fetchJson(url));
         }
-        console.log("");
 
         return Promise.all(promises);
+    }
+
+    /*
+        Return the sighting data of the provided iNaturalist API observation
+    */
+    function getSightingData(iNatObservation) {
+        const sighting = {};
+        sighting.photoUrls = getPhotoUrls(iNatObservation);
+        sighting.date = iNatObservation.observed_on;
+        sighting.observer = iNatObservation.user.login;
+        return sighting;
     }
 
     /*
@@ -449,22 +474,23 @@ function wildlifeSearch() {
     function filterWildlifeData(wildlifeJson) {
         const allDisplayData = [];
 
-        for(let observation of wildlifeJson.results) {
-            const organism = observation.taxon;
+        for(let iNatObservation of wildlifeJson.results) {
+            const organism = iNatObservation.taxon;
 
             // Ignore wildlife data that doesn't have a wikipedia URL, for now
             if (organism.wikipedia_url != null) {
                 const foundData = allDisplayData.find(element => element.name === organism.preferred_common_name);
 
-                // If the organism has already been stored, add this observation's pictures to that organism's data
+                // If the organism has already been stored, add this iNaturalist observation's sighting data to that organism's list of sightings
                 if(foundData != undefined) {
-                    foundData.photoUrls = foundData.photoUrls.concat(getPhotoUrls(observation));
+                    const sighting = getSightingData(iNatObservation);
+                    foundData.sightings.push(sighting);
                 }
                 else {
                     const organismData = {};
 
                     /*
-                        Store the preferred common name if the observation has it, otherwise store the organism's scientific name
+                        Store the preferred common name if the iNaturalist observation has it, otherwise store the organism's scientific name
                     */
                     if(typeof organism.preferred_common_name !== "undefined") {
                         organismData.name = organism.preferred_common_name;
@@ -473,7 +499,10 @@ function wildlifeSearch() {
                         organismData.name = organism.name;
                     }
                     
-                    organismData.photoUrls = getPhotoUrls(observation);
+                    organismData.sightings = [];
+                    const sighting = getSightingData(iNatObservation);
+                    organismData.sightings.push(sighting);
+
                     organismData.wikiUrl = organism.wikipedia_url;
 
                     allDisplayData.push(organismData);
@@ -483,7 +512,6 @@ function wildlifeSearch() {
                 console.log(`No wikipedia link for ${organism.preferred_common_name}`);
             }
         }
-        console.log("");
 
         return allDisplayData;
     }

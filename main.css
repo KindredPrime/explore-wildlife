@@ -88,6 +88,8 @@ header {
 
 .organism-photo {
     margin-right: 10px;
+    width: min-content;
+    display: inline-block;
 }
 
 .modal {
