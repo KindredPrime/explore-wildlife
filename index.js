@@ -65,7 +65,7 @@ function formatQueryParams(params) {
 }
 
 /*
-    Fetch JSON data from the provided URL, and use the provided error description to explain the context of an error if it occurs during the fetch.
+    Fetch JSON data from the provided URL
 */
 function fetchJson(url) {
     return fetch(url).then(response => {
@@ -99,7 +99,7 @@ function addressSearch() {
     function handleError(error) {
         const errorMessage = `An error occurred while finding addresses: ${error.message}`;
         console.log(errorMessage);
-        $(".find-addresses-error").text(errorMessage);
+        $(".find-addresses-status").text(errorMessage);
         MicroModal.show("addresses-modal");
     }
 
@@ -184,35 +184,37 @@ function addressSearch() {
         console.log(addressOptions);
         console.log("");
 
-        for(const address of addressOptions) {
-            const htmlElements = [];
-            const radioInput = `<input type="radio" id="${address.placeId}" class="address-option" name="address" value="${address.lat},${address.lon}">`;
-            htmlElements.push(radioInput);
+        if(addressOptions.length > 0) {
+            for(const address of addressOptions) {
+                const htmlElements = [];
+                const radioInput = `<input type="radio" id="${address.placeId}" class="address-option" name="address" value="${address.lat},${address.lon}">`;
+                htmlElements.push(radioInput);
 
-            let addressAsText = convertAddressToHtml(address.address);
-            const labelTag = `
-            <label for="${address.placeId}" class="address-option-label">
-                ${addressAsText}
-            </label>
-            `;
-            htmlElements.push(labelTag);
+                let addressAsText = convertAddressToHtml(address.address);
+                const labelTag = `
+                <label for="${address.placeId}" class="address-option-label">
+                    ${addressAsText}
+                </label>
+                `;
+                htmlElements.push(labelTag);
 
-            // Also include a break tag
-            htmlElements.push("<br>");
+                // Also include a break tag
+                htmlElements.push("<br>");
 
-            const htmlContent = htmlElements.join("\n");
-            $(".addresses-results").append(htmlContent);
+                const htmlContent = htmlElements.join("\n");
+                $(".addresses-results").append(htmlContent);
+            }
+
+            // Set the address options to be required
+            $(".address-option").first().attr("required", true);
+
+            // Create the submit button
+            $(".addresses-results").append(`
+            <button type="submit" class="submit-button address-submit">
+                Submit Selected Address
+            </button>
+            `);
         }
-
-        // Set the address options to be required
-        $(".address-option").first().attr("required", true);
-
-        // Create the submit button
-        $(".addresses-results").append(`
-        <button type="submit" class="submit-button address-submit">
-            Submit Selected Address
-        </button>
-        `);
             
         // Remove "Searching..." message
         $(".find-address").text("Find Address");
@@ -226,14 +228,18 @@ function addressSearch() {
     function getRelevantAddressData(addressesJson) {
         const relevantData = [];
 
-        for(const addressJson of addressesJson) {
-            const addressData = {};
-            addressData.address = addressJson.address;
-            addressData.lat = addressJson.lat;
-            addressData.lon = addressJson.lon;
-            addressData.placeId = addressJson.place_id;
+        try{
+            for(const addressJson of addressesJson) {
+                const addressData = {};
+                addressData.address = addressJson.address;
+                addressData.lat = addressJson.lat;
+                addressData.lon = addressJson.lon;
+                addressData.placeId = addressJson.place_id;
 
-            relevantData.push(addressData);
+                relevantData.push(addressData);
+            }
+        } catch(err) {
+            console.log("Skipping iterating through the addresses JSON");
         }
 
         return relevantData;
@@ -249,6 +255,33 @@ function addressSearch() {
         else {
             return false;
         }
+    }
+
+    /*
+        Handle when no addresses are found by the fetch to the LocationIQ API
+    */
+    function noAddressesFound() {
+        const message = "No addresses were found";
+        console.log(message);
+        $(".find-addresses-status").text(message);
+    }
+
+    /*
+        Fetch JSON address data from the provided LocationIQ URL, handle if no addresses are returned, and handle if some other problem occurs with the request
+    */
+    function fetchCoordinatesJson(url) {
+        return fetch(url).then(response => {
+            if(response.ok) {
+                return response.json();
+            }
+            else if(response.status === 404){
+                noAddressesFound();
+                return response.json();
+            }
+            else {
+                throw Error(response.statusText);
+            }
+        });
     }
 
     /*
@@ -272,7 +305,7 @@ function addressSearch() {
         console.log(`Fetching data from: ${url}`);
         console.log("");
 
-        return fetchJson(url);
+        return fetchCoordinatesJson(url);
     }
 
     /*
@@ -283,7 +316,7 @@ function addressSearch() {
             event.preventDefault();
 
             // Clear any previous errors
-            $(".find-addresses-error").text("");
+            $(".find-addresses-status").text("");
 
             // Clear any previous addresses results
             $(".addresses-results").empty();
@@ -323,7 +356,7 @@ function addressSearch() {
                 .catch(handleError);
             }
             else {
-                $(".find-addresses-error").text('You must fill out the "Street Name" field.');
+                $(".find-addresses-status").text('You must fill out the "Street Name" field.');
                 console.log(`Error while finding address: The "Street Name" field wasn't filled out.`);
                 MicroModal.show("addresses-modal");
             }
