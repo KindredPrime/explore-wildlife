@@ -84,7 +84,6 @@ function fetchJson(url) {
 function addressSearch() {
     const locationIQKey = "c8f4ef91fa2470";
     const commonAddressComponents = [
-        "country_code",
         "country",
         "state",
         "county",
@@ -92,6 +91,7 @@ function addressSearch() {
         "city",
         "road"
     ];
+    let fetchReturnedAddresses = false;
 
     /*
         Handle all errors that occur
@@ -126,7 +126,7 @@ function addressSearch() {
             }
         }
 
-        return presentCommonAddressComponents.length < 5;
+        return presentCommonAddressComponents.length < 4;
     }
 
     /*
@@ -140,7 +140,6 @@ function addressSearch() {
         if(addressCopy.country != undefined) {
             htmlParts.push(`Country: ${address.country}`);
             delete addressCopy.country;
-            delete addressCopy.country_code;
         }
         if(addressCopy.state != undefined) {
             htmlParts.push(`<span class="address-component">State: ${address.state}</span>`);
@@ -184,13 +183,14 @@ function addressSearch() {
         console.log(addressOptions);
         console.log("");
 
+        // Display each of the address options
         if(addressOptions.length > 0) {
             for(const address of addressOptions) {
                 const htmlElements = [];
                 const radioInput = `<input type="radio" id="${address.placeId}" class="address-option" name="address" value="${address.lat},${address.lon}">`;
                 htmlElements.push(radioInput);
 
-                let addressAsText = convertAddressToHtml(address.address);
+                let addressAsText = convertAddressToHtml(address.addressComponents);
                 const labelTag = `
                 <label for="${address.placeId}" class="address-option-label">
                     ${addressAsText}
@@ -215,6 +215,12 @@ function addressSearch() {
             </button>
             `);
         }
+        // Either the fetch didn't return any addresses, or all of the returned addresses were invalid
+        else {
+            const message = "No addresses were found";
+            console.log(message);
+            $(".find-addresses-status").text(message);
+        }
             
         // Remove "Searching..." message
         $(".find-address").text("Find Address");
@@ -223,23 +229,103 @@ function addressSearch() {
     }
 
     /*
-        Return an array containing the relevant data from each of the provided addresses
+        Return true if the provided address refers to an area that is too large
+    */
+    function addressIsTooLarge(addressJson) {
+        const unacceptableMatchLevels = [
+            "island",
+            "borough",
+            "city",
+            "county",
+            "state",
+            "country",
+            "marine",
+            "postalcode"
+        ];
+
+        // The match level is a LocationIQ API property that represents the granularity of the address
+        const matchLevel = addressJson.matchquality.matchlevel;
+        if(unacceptableMatchLevels.includes(matchLevel)) {
+            console.log(`Address ${addressJson.place_id} has an unacceptable match level: ${matchLevel}`);
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
+        Return true if the provided address is unlikely to match the search parameters
+    */
+    function addressIsUnlikely(addressJson) {
+        const unacceptableMatchCodes = [
+            "approximate"
+        ];
+
+        // The match code is a LocationIQ API property that represents the likelihood the returned address matches its search parameters
+        const matchCode = addressJson.matchquality.matchcode;
+        if(unacceptableMatchCodes.includes(matchCode)) {
+            console.log(`Address ${addressJson.place_id} has an unacceptable match code: ${matchCode}`);
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
+        Return true if the provided address passes all the tests
+    */
+    function addressIsValid(addressJson) {
+        // Fail the address if it's missing a country
+        if(addressJson.address.country == undefined) {
+            console.log(`Address ${addressJson.place_id} is missing its country`);
+            return false;
+        }
+
+        // Fail the address if its probability of matching the search parameters is too low
+        if(addressIsUnlikely(addressJson)) {
+            console.log(`Address ${addressJson.place_id} is unlikely to match the user's search parameters`);
+            return false;
+        }
+
+        if(addressIsTooLarge(addressJson)) {
+            console.log(`Address ${addressJson.place_id} refers to an area that is too large`);
+            return false;
+        }
+
+        return true;
+    }
+
+    /*
+        Return an array containing the relevant data from each of the provided addresses that are valid
     */
     function getRelevantAddressData(addressesJson) {
         const relevantData = [];
 
-        try{
+        // Iterate through the returned address options
+        if(fetchReturnedAddresses)
+        {
             for(const addressJson of addressesJson) {
-                const addressData = {};
-                addressData.address = addressJson.address;
-                addressData.lat = addressJson.lat;
-                addressData.lon = addressJson.lon;
-                addressData.placeId = addressJson.place_id;
+                if(addressIsValid(addressJson)) {
+                    const addressOption = {};
 
-                relevantData.push(addressData);
+                    // Make a copy of the addressJson's address object
+                    const addressComponentsCopy = {};
+                    Object.assign(addressComponentsCopy, addressJson.address);
+
+                    // Remove extra address component fields
+                    if(addressComponentsCopy.country_code != undefined) {
+                        delete addressComponentsCopy.country_code;
+                    }
+
+                    addressOption.addressComponents = addressComponentsCopy;
+                    
+                    addressOption.lat = addressJson.lat;
+                    addressOption.lon = addressJson.lon;
+                    addressOption.placeId = addressJson.place_id;
+
+                    relevantData.push(addressOption);
+                }
             }
-        } catch(err) {
-            console.log("Skipping iterating through the addresses JSON");
         }
 
         return relevantData;
@@ -258,24 +344,16 @@ function addressSearch() {
     }
 
     /*
-        Handle when no addresses are found by the fetch to the LocationIQ API
-    */
-    function noAddressesFound() {
-        const message = "No addresses were found";
-        console.log(message);
-        $(".find-addresses-status").text(message);
-    }
-
-    /*
         Fetch JSON address data from the provided LocationIQ URL, handle if no addresses are returned, and handle if some other problem occurs with the request
     */
     function fetchCoordinatesJson(url) {
         return fetch(url).then(response => {
             if(response.ok) {
+                fetchReturnedAddresses = true;
                 return response.json();
             }
+            // No addresses were returned
             else if(response.status === 404){
-                noAddressesFound();
                 return response.json();
             }
             else {
@@ -298,7 +376,10 @@ function addressSearch() {
             country: address.country,
             postalCode: address.postalCode,
             format: "json",
-            addressdetails: "1"
+            normalizecity: "1",
+            addressdetails: "1",
+            matchquality: "1",
+            limit: "50"
         };
         const queryParams = formatQueryParams(params);
         const url = baseUrl + "?" + queryParams;
