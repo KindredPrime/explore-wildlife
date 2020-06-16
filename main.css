@@ -141,3 +141,7 @@ header {
     display: inline-block;
     margin-top: 15px;
 }
+
+.address-component {
+    display: block;
+}

@@ -73,7 +73,7 @@ function fetchJson(url) {
             return response.json();
         }
         else {
-            throw Error(reponse.statusText);
+            throw Error(response.statusText);
         }
     });
 }
@@ -83,6 +83,15 @@ function fetchJson(url) {
 */
 function addressSearch() {
     const locationIQKey = "c8f4ef91fa2470";
+    const commonAddressComponents = [
+        "country_code",
+        "country",
+        "state",
+        "county",
+        "postcode",
+        "city",
+        "road"
+    ];
 
     /*
         Handle all errors that occur
@@ -94,27 +103,77 @@ function addressSearch() {
         MicroModal.show("addresses-modal");
     }
 
+    function formatAddressComponent(component) {
+        let formattedComponent = component.replace(/[-_]/g, " ");
+
+        // Capitalize the first letter of each word
+        const componentWords = formattedComponent.toLowerCase().split(" ");
+        formattedComponent = componentWords.map(word => {
+            return word.charAt(0).toUpperCase() + word.substring(1)
+        }).join(' ');
+        
+        return formattedComponent;
+    }
+
+    /*
+        Return true if the provided address doesn't have many common components
+    */
+    function commonAddressComponentsAreSparse(address) {
+        const presentCommonAddressComponents = [];
+        for(const component in address) {
+            if(commonAddressComponents.includes(component)) {
+                presentCommonAddressComponents.push(component);
+            }
+        }
+
+        return presentCommonAddressComponents.length < 5;
+    }
+
     /*
         Convert the provided address to a string
     */
-    function convertAddressToString(address) {
-        let stringParts = [];
-        stringParts.push(`Country: ${address.country}`);
-        stringParts.push(`State: ${address.state}`);
-        stringParts.push(`State District: ${address.state_district}`);
-        stringParts.push(`County: ${address.county}`);
-        stringParts.push(`City: ${address.city}`);
-        stringParts.push(`Village: ${address.village}`);
-        stringParts.push(`Postal Code: ${address.postcode}`);
-        stringParts.push(`Locality: ${address.locality}`);
-        stringParts.push(`Hamlet: ${address.hamlet}`);
-        stringParts.push(`Neighborhood: ${address.neighbourhood}`);
-        stringParts.push(`Road: ${address.road}`);
+    function convertAddressToHtml(address) {
+        const addressCopy = {};
+        Object.assign(addressCopy, address);
 
-        // Remove the undefined address components
-        stringParts = stringParts.filter(component => !component.includes("undefined"));
+        let htmlParts = [];
+        if(addressCopy.country != undefined) {
+            htmlParts.push(`Country: ${address.country}`);
+            delete addressCopy.country;
+            delete addressCopy.country_code;
+        }
+        if(addressCopy.state != undefined) {
+            htmlParts.push(`<span class="address-component">State: ${address.state}</span>`);
+            delete addressCopy.state;
+        }
+        if(addressCopy.county != undefined) {
+            htmlParts.push(`<span class="address-component">County: ${address.county}</span>`);
+            delete addressCopy.county
+        }
+        if(addressCopy.postcode != undefined) {
+            htmlParts.push(`<span class="address-component">Postal Code: ${address.postcode}</span>`);
+            delete addressCopy.postcode;
+        }
+        if(addressCopy.city != undefined) {
+            htmlParts.push(`<span class="address-component">City: ${address.city}</span>`);
+            delete addressCopy.city;
+        }
+        if(addressCopy.road != undefined) {
+            htmlParts.push(`<span class="address-component">Road: ${address.road}</span>`);
+            delete addressCopy.road;
+        }
+        
+        // Display the rest of the uncommon address components if there weren't enough common components to display
+        const commonAddressDataIsSparse = commonAddressComponentsAreSparse(address);
+        if(commonAddressDataIsSparse) {
+            for(const uncommonComponent in addressCopy) {
+                // Format the component to display cleanly
+                let formattedComponent = formatAddressComponent(uncommonComponent);
+                htmlParts.push(`<span class="address-component">${formattedComponent}: ${addressCopy[uncommonComponent]}</span>`);
+            }
+        }
 
-        return stringParts.join(",\n");
+        return htmlParts.join("");
     }
 
     /*
@@ -126,18 +185,22 @@ function addressSearch() {
         console.log("");
 
         for(const address of addressOptions) {
-            const dataToDisplay = [];
+            const htmlElements = [];
             const radioInput = `<input type="radio" id="${address.placeId}" class="address-option" name="address" value="${address.lat},${address.lon}">`;
-            dataToDisplay.push(radioInput);
+            htmlElements.push(radioInput);
 
-            let labelText = convertAddressToString(address.address);
-            const labelTag = `<label for="${address.placeId}">${labelText}</label>`;
-            dataToDisplay.push(labelTag);
+            let addressAsText = convertAddressToHtml(address.address);
+            const labelTag = `
+            <label for="${address.placeId}" class="address-option-label">
+                ${addressAsText}
+            </label>
+            `;
+            htmlElements.push(labelTag);
 
             // Also include a break tag
-            dataToDisplay.push("<br>");
+            htmlElements.push("<br>");
 
-            const htmlContent = dataToDisplay.join("\n");
+            const htmlContent = htmlElements.join("\n");
             $(".addresses-results").append(htmlContent);
         }
 
