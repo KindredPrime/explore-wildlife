@@ -390,17 +390,26 @@ function addressSearch() {
     }
 
     /*
+        Reset all variables and DOM elements that are left over from previous address searches
+    */
+    function resetEnvironment() {
+        fetchReturnedAddresses = false;
+
+        // Clear previous errors
+        $(".find-addresses-status").text("");
+
+        // Clear previous addresses results
+        $(".addresses-results").empty();
+    }
+
+    /*
         Create an event listener for when the "Find Address" button is clicked
     */
     function handleFindAddressClick() {
         $(".find-address").click(event => {
             event.preventDefault();
 
-            // Clear any previous errors
-            $(".find-addresses-status").text("");
-
-            // Clear any previous addresses results
-            $(".addresses-results").empty();
+            resetEnvironment();
 
             // Grab user input
             const userAddress = {};
