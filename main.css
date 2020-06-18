@@ -25,20 +25,6 @@ header {
     text-align: center;
 }
 
-.example-searches {
-    margin-bottom: 30px;
-}
-
-.example-searches button {
-    background-color: transparent;
-    border: none;
-    display: block;
-}
-
-.example-searches button:hover {
-    cursor: pointer;
-}
-
 .search-header {
     margin-bottom: 5px;
 }
