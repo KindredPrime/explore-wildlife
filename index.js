@@ -976,9 +976,10 @@ function wildlifeSearch() {
                 .then(filteredData => {
                     allDisplayData = filteredData;
     
-                    const wikiUrls = allDisplayData.map(data => data.wikiUrl);
-                    return getWikipediaData(wikiUrls);
+                    // Create an array of just the Wikipedia URLs
+                    return allDisplayData.map(data => data.wikiUrl);
                 })
+                .then(getWikipediaData)
                 .then(promiseResults => {
                     console.log(`----------Wikipedia Intros Found----------`);
                     // Loop through each MediaWiki Response
