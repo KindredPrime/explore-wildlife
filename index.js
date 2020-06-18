@@ -91,7 +91,31 @@ function addressSearch() {
         "city",
         "road"
     ];
+    const minimumCommonComponents = 4;
     let fetchReturnedAddresses = false;
+
+    // LocationIQ element that represents the likelihood the returned address matches its search parameters.  Ordered from greatest likelihood to least likelihood
+    const matchCodes = [
+        "exact",
+        "fallback",
+        "approximate"
+    ];
+
+    // LocationIQ element that represents the granularity of the returned address.  Ordered from most granular to least granular.
+    const matchLevels = [
+        "venue",
+        "building",
+        "street",
+        "neighbourhood",
+        "island",
+        "borough",
+        "city",
+        "county",
+        "state",
+        "country",
+        "marine",
+        "postalcode"
+    ];
 
     /*
         Handle all errors that occur
@@ -116,59 +140,39 @@ function addressSearch() {
     }
 
     /*
-        Return true if the provided address doesn't have many common components
-    */
-    function commonAddressComponentsAreSparse(address) {
-        const presentCommonAddressComponents = [];
-        for(const component in address) {
-            if(commonAddressComponents.includes(component)) {
-                presentCommonAddressComponents.push(component);
-            }
-        }
-
-        return presentCommonAddressComponents.length < 4;
-    }
-
-    /*
         Convert the provided address to a string
     */
     function convertAddressToHtml(address) {
-        const addressCopy = {};
-        Object.assign(addressCopy, address);
-
+        const commonComponents = address.common;
+        const uncommonComponents = address.uncommon;
         let htmlParts = [];
-        if(addressCopy.country != undefined) {
-            htmlParts.push(`Country: ${address.country}`);
-            delete addressCopy.country;
+
+        /*
+            Convert common components to HTML
+        */
+        htmlParts.push(`Country: ${address.common.country}`);
+        if(commonComponents.state != undefined) {
+            htmlParts.push(`<span class="address-component">State: ${commonComponents.state}</span>`);
         }
-        if(addressCopy.state != undefined) {
-            htmlParts.push(`<span class="address-component">State: ${address.state}</span>`);
-            delete addressCopy.state;
+        if(commonComponents.county != undefined) {
+            htmlParts.push(`<span class="address-component">County: ${commonComponents.county}</span>`);
         }
-        if(addressCopy.county != undefined) {
-            htmlParts.push(`<span class="address-component">County: ${address.county}</span>`);
-            delete addressCopy.county
+        if(commonComponents.postcode != undefined) {
+            htmlParts.push(`<span class="address-component">Postal Code: ${commonComponents.postcode}</span>`);
         }
-        if(addressCopy.postcode != undefined) {
-            htmlParts.push(`<span class="address-component">Postal Code: ${address.postcode}</span>`);
-            delete addressCopy.postcode;
+        if(commonComponents.city != undefined) {
+            htmlParts.push(`<span class="address-component">City: ${commonComponents.city}</span>`);
         }
-        if(addressCopy.city != undefined) {
-            htmlParts.push(`<span class="address-component">City: ${address.city}</span>`);
-            delete addressCopy.city;
-        }
-        if(addressCopy.road != undefined) {
-            htmlParts.push(`<span class="address-component">Road: ${address.road}</span>`);
-            delete addressCopy.road;
+        if(commonComponents.road != undefined) {
+            htmlParts.push(`<span class="address-component">Road: ${commonComponents.road}</span>`);
         }
         
-        // Display the rest of the uncommon address components if there weren't enough common components to display
-        const commonAddressDataIsSparse = commonAddressComponentsAreSparse(address);
-        if(commonAddressDataIsSparse) {
-            for(const uncommonComponent in addressCopy) {
+        // Convert common components to HTML if there aren't enough common components to display
+        if(commonComponents.length < minimumCommonComponents) {
+            for(const uncommonComponent in uncommonComponents) {
                 // Format the component to display cleanly
                 let formattedComponent = formatAddressComponent(uncommonComponent);
-                htmlParts.push(`<span class="address-component">${formattedComponent}: ${addressCopy[uncommonComponent]}</span>`);
+                htmlParts.push(`<span class="address-component">${formattedComponent}: ${uncommonComponents[uncommonComponent]}</span>`);
             }
         }
 
@@ -185,14 +189,14 @@ function addressSearch() {
 
         // Display each of the address options
         if(addressOptions.length > 0) {
-            for(const address of addressOptions) {
+            for(const addressOption of addressOptions) {
                 const htmlElements = [];
-                const radioInput = `<input type="radio" id="${address.placeId}" class="address-option" name="address" value="${address.lat},${address.lon}">`;
+                const radioInput = `<input type="radio" id="${addressOption.placeId}" class="address-option" name="address" value="${addressOption.lat},${addressOption.lon}">`;
                 htmlElements.push(radioInput);
 
-                let addressAsText = convertAddressToHtml(address.addressComponents);
+                let addressAsText = convertAddressToHtml(addressOption.addressComponents);
                 const labelTag = `
-                <label for="${address.placeId}" class="address-option-label">
+                <label for="${addressOption.placeId}" class="address-option-label">
                     ${addressAsText}
                 </label>
                 `;
@@ -229,24 +233,87 @@ function addressSearch() {
     }
 
     /*
+        Find the best address of the provided addresses
+    */
+    function getBestAddress(addresses) {
+        // Keep only the addresses with the best match code
+        // I haven't found any test data with duplicate addresses that have different match codes.  Until I find any such data, there's no need to compare match codes
+
+        // Keep only the addresses with the most granular match level
+        // I haven't found any test data with duplicate addresses that have different match levels.  Until I find any such data, there's no need to compare match levels
+        
+        // If there are still multiple addresses left, then they're equal-enough; return the first one
+        return addresses[0];
+    }
+
+    /*
+        Return a new array with the following: From each set of addresses that have identical common address components, remove all addresses except for the best address
+    */
+    function removeDuplicates(allAddressData) {
+        const uniqueAddressData = [];
+        for(const addressData of allAddressData) {
+            // Check if an equivalent address option already exists in the filtered array
+            const existingDataIndex = uniqueAddressData.findIndex(data => {
+                return _.isEqual(data.addressComponents.common, addressData.addressComponents.common);
+            });
+
+            // Found a duplicate address
+            if(existingDataIndex > -1) {
+                const existingData = uniqueAddressData[existingDataIndex];
+                console.log(`Address ${addressData.placeId} has an identical match: address ${existingData.placeId}`);
+
+                // Keep the better of the two addresses
+                const bestAddress = getBestAddress([addressData, existingData]);
+                console.log(`----Chosen address: ${bestAddress.placeId}`);
+                uniqueAddressData[existingDataIndex] = bestAddress;
+            }
+            // Not a duplicate address
+            else {
+                uniqueAddressData.push(addressData);
+            }
+        }
+
+        return uniqueAddressData;
+    }
+
+    /*
+        Return an object containing the uncommon address components of the provided components
+    */
+    function getUncommonComponents(addressComponents) {
+        const returningComponents = {};
+        for(const component in addressComponents) {
+            if(!commonAddressComponents.includes(component)) {
+                returningComponents[component] = addressComponents[component];
+            }
+        }
+
+        return returningComponents;
+    }
+
+    /*
+        Return an object containing the common address components of the provided components
+    */
+    function getCommonComponents(addressComponents) {
+        const returningComponents = {};
+        for(const component in addressComponents) {
+            if(commonAddressComponents.includes(component)) {
+                returningComponents[component] = addressComponents[component];
+            }
+        }
+
+        return returningComponents;
+    }
+
+    /*
         Return true if the provided address refers to an area that is too large
     */
     function addressIsTooLarge(addressJson) {
-        const unacceptableMatchLevels = [
-            "island",
-            "borough",
-            "city",
-            "county",
-            "state",
-            "country",
-            "marine",
-            "postalcode"
-        ];
+        // island, borough, city, county, state, country, marine, postalcode
+        const unacceptableMatchLevels = matchLevels.slice(-8);
 
         // The match level is a LocationIQ API property that represents the granularity of the address
         const matchLevel = addressJson.matchquality.matchlevel;
         if(unacceptableMatchLevels.includes(matchLevel)) {
-            console.log(`Address ${addressJson.place_id} has an unacceptable match level: ${matchLevel}`);
             return true;
         }
 
@@ -257,14 +324,12 @@ function addressSearch() {
         Return true if the provided address is unlikely to match the search parameters
     */
     function addressIsUnlikely(addressJson) {
-        const unacceptableMatchCodes = [
-            "approximate"
-        ];
+        // approximate
+        const unacceptableMatchCodes = matchCodes.slice(-1);
 
         // The match code is a LocationIQ API property that represents the likelihood the returned address matches its search parameters
         const matchCode = addressJson.matchquality.matchcode;
         if(unacceptableMatchCodes.includes(matchCode)) {
-            console.log(`Address ${addressJson.place_id} has an unacceptable match code: ${matchCode}`);
             return true;
         }
 
@@ -317,7 +382,12 @@ function addressSearch() {
                         delete addressComponentsCopy.country_code;
                     }
 
-                    addressOption.addressComponents = addressComponentsCopy;
+                    const commonComponents = getCommonComponents(addressComponentsCopy);
+                    const uncommonComponents = getUncommonComponents(addressComponentsCopy);
+                    addressOption.addressComponents = {
+                        common: commonComponents,
+                        uncommon: uncommonComponents
+                    };
                     
                     addressOption.lat = addressJson.lat;
                     addressOption.lon = addressJson.lon;
@@ -440,7 +510,9 @@ function addressSearch() {
                     console.log(addressesJson);
                     console.log("");
 
-                    return getRelevantAddressData(addressesJson);
+                    const allAddressData = getRelevantAddressData(addressesJson);
+                    const uniqueAddressData = removeDuplicates(allAddressData);
+                    return uniqueAddressData;
                 })
                 .then(displayAddresses)
                 .catch(handleError);
