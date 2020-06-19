@@ -576,6 +576,63 @@ function wildlifeSearch() {
     }
 
     /*
+        Return true if the organism has multiple photos
+    */
+    function hasMultiplePhotos(organism) {
+        const sightings = organism.sightings;
+        if(sightings.length > 1) {
+            return true;
+        }
+        else if(sightings[0].photoUrls.length > 1) {
+            return true;
+        }
+            
+        return false;
+    }
+
+    /*
+        Convert the wildlife sightings of the provided organism to an HTML string to be displayed to the DOM
+    */
+    function convertSightingsToHtml(sightings, name) {
+        const photosAndCaptions = [];
+        for(const sighting of sightings) {
+            for(const photoUrl of sighting.photoUrls) {
+                const photo = {};
+                photo.img = `<img src="${photoUrl}" alt="${name}" class="organism-photo">`;
+                photo.caption = `<p>Observed by iNaturalist user ${sighting.observer} on ${sighting.date}</p>`;
+                photosAndCaptions.push(photo);
+            }
+        }
+
+        // Convert the photos and captions to HTML
+        let isFirstPhoto = true;
+        const sightingsAsHtml = photosAndCaptions.map(photo => {
+            const sightingId = cuid();
+
+            if(isFirstPhoto) {
+                isFirstPhoto = false;
+
+                return `
+                <div class="sighting default-sighting js-current-sighting" data-sighting-id="${sightingId}">
+                    ${photo.img}
+                    ${photo.caption}
+                </div>
+                `;
+            }
+            else {
+                return `
+                <div class="sighting" data-sighting-id="${sightingId}">
+                    ${photo.img}
+                    ${photo.caption}
+                </div>
+                `;
+            }
+        }).join("\n");
+
+        return sightingsAsHtml;
+    }
+
+    /*
         Display the wildlife data to the DOM
     */
     function displayData(data) {
@@ -587,37 +644,44 @@ function wildlifeSearch() {
         }
         else {
             for(const organism of data) {
-                const photos = [];
-                for(const sighting of organism.sightings) {
-                    for(const photoUrl of sighting.photoUrls) {
-                        const photo = {};
-                        photo.img = `<img src="${photoUrl}" alt="${organism.name}">`;
-                        photo.caption = `<p>Observed by iNaturalist user ${sighting.observer} on ${sighting.date}</p>`;
-                        photos.push(photo);
-                    }
-                }
+                const sightingsAsHtml = convertSightingsToHtml(organism.sightings, organism.name);
 
-                // Convert the photos to HTML
-                const photosAsHtml = photos.map(photo => {
-                    return `
-                    <div class="organism-photo">
-                        ${photo.img}
-                        ${photo.caption}
-                    </div>
-                    `;
-                }).join("\n");
+                const organismId = cuid();
 
                 $(".wildlife-results").append(`
-                <section class="wildlife-result">
-                    <section class="sightings">
-                        ${photosAsHtml}
-                    </section>
+                <section class="wildlife-result" data-organism-id="${organismId}">
+                    <div class="sightings-slideshow">
+                        <section class="sightings">
+                            ${sightingsAsHtml}
+                        </section>
+                    </div>
 
                     <h3>${organism.name}</h3>
                     <p>${organism.wikiIntro}</p>
                     <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}</a>
                 </section>
                 `);
+
+                // Add previous and next buttons if there is more than one sighting for the organism
+                if(hasMultiplePhotos(organism)) {
+                    $(`.wildlife-result[data-organism-id="${organismId}"]`)
+                    .find(".sightings-slideshow")
+                    .append(`
+                    <button type="button" 
+                    class="slideshow-button left-arrow-button hidden">
+                        <img 
+                        src="images/left-arrow.png" 
+                        alt="previous image" 
+                        class="arrow-img">
+                    </button>
+                    
+                    <button type="button" 
+                    class="slideshow-button right-arrow-button">
+                        <img src="images/right-arrow.png" alt="next image" 
+                        class="arrow-img">
+                    </button>
+                    `);
+                }
             }
         }
     }
@@ -1055,10 +1119,165 @@ function loadPages() {
     handleNewSearchButtonClick();
 }
 
+/*
+    Handles switching between sightings in the sighting slideshows for wildlife search results
+*/
+function handleSightingTransitions() {
+    /*
+        Returns true if the currently-displayed sighting is the last in its 
+        slideshow
+    */
+    function onLastSighting(organismId) {
+        const currentOrganism = 
+            $(`.wildlife-result[data-organism-id="${organismId}"]`);
+        const currentSighting = 
+            currentOrganism.find(`.sighting.js-current-sighting`);
+
+        const nextSighting = currentSighting.next(".sighting");
+        if(nextSighting.length === 0) { //i.e. there aren't any next sightings
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /*
+        Returns true if the currently-displayed sighting is the first in its 
+        slideshow
+    */
+    function onFirstSighting(organismId) {
+        const currentOrganism = 
+            $(`.wildlife-result[data-organism-id="${organismId}"]`);
+        const currentSighting = currentOrganism
+            .find(`.sighting.js-current-sighting`);
+
+        const prevSighting = currentSighting.prev(".sighting");
+        // There aren't any previous sightings
+        if(prevSighting.length === 0) { 
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /*
+        Hides from the page the currently displayed sighting, for the provided organism
+    */
+    function hideCurrentSighting(organismID) {
+        const currentOrganism = 
+            $(`.wildlife-result[data-organism-id="${organismID}"]`);
+        const currentSighting = 
+            currentOrganism.find(`.sighting.js-current-sighting`);
+
+        currentSighting.removeClass("js-current-sighting");
+        currentSighting.hide();
+    }
+
+    /*
+        Shows on the page the sighting with the provided sighting ID, for the 
+        organism with the provided organism ID
+    */
+    function showSighting(organismId, sightingId) {
+        const organism = $(`.wildlife-result[data-organism-id="${organismId}"]`);
+        const sightingToShow = organism
+            .find(`.sighting[data-sighting-id="${sightingId}"]`);
+
+        /* 
+            Checks if there are sightings with that ID to show
+        */
+        if(sightingToShow.length > 0) {
+            sightingToShow.addClass("js-current-sighting");
+
+            const slideshowButtons = organism.find(".slideshow-button");
+            // Disable the buttons until after the animation finishes
+            slideshowButtons.prop("disabled", true);
+            sightingToShow.show("fade", "linear", 600, () => {
+                slideshowButtons.prop("disabled", false);
+            });
+        }
+    }
+
+    /*
+        Shows/Hides the arrow buttons based on which sighting in the slideshow 
+        is currently being displayed
+    */
+    function updateButtonsDisplayed(organismId) {
+        const currentOrganism = 
+            $(`.wildlife-result[data-organism-id="${organismId}"]`);
+        const leftArrow = currentOrganism.find(".left-arrow-button");
+        const rightArrow = currentOrganism.find(".right-arrow-button");
+
+        if(onLastSighting(organismId)) {
+            leftArrow.show();
+            rightArrow.hide();
+        }
+        else if(onFirstSighting(organismId)) {
+            leftArrow.hide();
+            rightArrow.show();
+        }
+        else { //On some sighting in the middle
+            leftArrow.show();
+            rightArrow.show();
+        }
+    }
+
+    /*
+        Handles switching to the next sighting when the right arrow button is 
+        clicked
+    */
+    function handleNextSighting() {
+        $(".wildlife-results").on("click", ".right-arrow-button", event => {
+            const organismId = $(event.currentTarget)
+                .parents(".wildlife-result")
+                .data("organism-id");
+            const currentSighting = $(event.currentTarget)
+                .parents(".wildlife-result")
+                .find(".sighting.js-current-sighting");
+
+            hideCurrentSighting(organismId);
+
+            const nextSightingId = currentSighting.next(".sighting")
+                .data("sighting-id");
+            showSighting(organismId, nextSightingId);
+
+            updateButtonsDisplayed(organismId);
+        });
+    }
+
+    /*
+        Handles switching to the previous sighting when the left arrow button is
+        clicked
+    */
+    function handlePrevSighting() {
+        $(".wildlife-results").on("click", ".left-arrow-button", event => {
+            const organismId = $(event.currentTarget)
+                .parents(".wildlife-result")
+                .data("organism-id");
+            const currentSighting = $(event.currentTarget)
+                .parents(".wildlife-result")
+                .find(".sighting.js-current-sighting");
+
+            hideCurrentSighting(organismId);
+
+            const prevSightingId = currentSighting.prev(".sighting")
+                .data("sighting-id");
+            showSighting(organismId, prevSightingId);
+
+            updateButtonsDisplayed(organismId);
+        });
+    }
+    
+    handleNextSighting();
+    handlePrevSighting();
+}
+
 $(function() {
     MicroModal.init();
     setDefaultDates();
     addressSearch();
     wildlifeSearch();
     loadPages();
+    handleSightingTransitions();
 });
