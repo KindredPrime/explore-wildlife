@@ -566,13 +566,16 @@ function wildlifeSearch() {
     // The number of observations returned by the iNaturalist API per page of observations
     const wildlifePerPage = 200;
 
+    // The statuses and errors that occur during the wildlife search
+    const wildlifeStatuses = [];
+
     /*
         Handle all errors that occur
     */
     function handleError(error) {
         const errorMessage = `An error occurred while searching for wildlife: ${error.message}`;
         console.log(errorMessage);
-        $(".wildlife-status").text(errorMessage);
+        wildlifeStatuses.push(errorMessage);
     }
 
     /*
@@ -640,7 +643,7 @@ function wildlifeSearch() {
         console.log(data);
 
         if(data.length === 0) {
-            $(".wildlife-status").text("No wildlife observations found");
+            wildlifeStatuses.push("No wildlife observations found.");
         }
         else {
             for(const organism of data) {
@@ -656,11 +659,19 @@ function wildlifeSearch() {
                         </section>
                     </div>
 
-                    <h3>${organism.name}</h3>
-                    <p>${organism.wikiIntro}</p>
+                    <h3 class="organism-name">${organism.name}</h3>
                     <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}</a>
                 </section>
                 `);
+
+                // Some organisms may not have their wikipedia intros if the Wikipedia fetch couldn't find anything, or if some other error occurred with the fetch
+                if(organism.wikiIntro != undefined) {
+                    $(`.wildlife-result[data-organism-id="${organismId}"]`)
+                        .find(".organism-name")
+                        .after(`
+                        <p>${organism.wikiIntro}</p>
+                        `);
+                }
 
                 // Add previous and next buttons if there is more than one sighting for the organism
                 if(hasMultiplePhotos(organism)) {
@@ -710,33 +721,89 @@ function wildlifeSearch() {
     }
 
     /*
+        Handle any errors or warnings in the Wikipedia response
+    */
+    function handleWikiResponseProblems(wikiJson) {
+        const errorsJson = wikiJson.errors;
+        if(errorsJson != undefined) {
+            for(const errorJson of errorsJson) {
+                console.log(`An error was found in the Wikipedia response: ${errorJson.html}`);
+                wildlifeStatuses.push(`Some wildlife may be missing their description text because there was an error with Wikipedia: '${errorJson.html}'`);
+            }
+        }
+
+        const warningsJson = wikiJson.warnings;
+        if(warningsJson != undefined) {
+            for(const warningJson of warningsJson) {
+                console.log(`A warning was found in the Wikipedia response: ${warningJson.html}`);
+            }
+        }
+    }
+
+    /*
+        Search through the Wikipedia responses and store any Wikipedia intros that were returned
+
+        - Handle any errors and warnings found
+        - Handle any Wikipedia pages that Wikipedia couldn't find intros for
+    */
+    function processWikiIntros(promiseResults, allDisplayData) {
+        let introsWereMissing = false;
+
+        console.log(`----------Wikipedia Intros Found----------`);
+        // Loop through each MediaWiki Response
+        for(let resultCount = 0; resultCount < promiseResults.length; resultCount++) {
+            const wikipediaJson = promiseResults[resultCount];
+            console.log(wikipediaJson);
+
+            handleWikiResponseProblems(wikipediaJson);
+
+            // Log if Wikipedia couldn't access any of the organisms' pages
+            if(wikipediaJson.batchcomplete != undefined && wikipediaJson.batchcomplete === false) {
+                console.log("Some Wikipedia data could not be returned in the response.");
+                introsWereMissing = true;
+            }
+
+            if(wikipediaJson.query != undefined && wikipediaJson.query.pages != undefined){
+                const wikipediaPages = wikipediaJson.query.pages;
+                
+                // Each successful MediaWiki Response has 20 Wikipedia pages in it (except the last one, which may have fewer)
+                const pageBracket = resultCount * 20;
+
+                // Store the page intro that corresponds to each organism in the page bracket
+                for(let i = 0; i < wikipediaPages.length; i++) {
+                    // Grab the ith organism of the current page bracket
+                    const organismData = allDisplayData[pageBracket + i];
+
+                    // Grab the organism's page title and add spaces back into it, so it matches the format of the JSON page titles
+                    const wikiUrl = organismData.wikiUrl;
+                    const organismPageTitle = getPageTitle(wikiUrl).replace(/_/g, " ");
+
+                    // Store the Wikipedia intro for the organism, if it was found by the Wikipedia fetch.  The Wikipedia intro has to be searched for because MediaWiki returns the results of the multi-page request in a random order.
+                    const wikiIntroJson = wikipediaPages.find(element => element.title === organismPageTitle);
+                    if(wikiIntroJson != undefined && wikiIntroJson.extract != undefined) {
+                        organismData.wikiIntro = wikiIntroJson.extract;
+                    }
+                    else {
+                        console.log(`No Wikipedia intro was found for organism: ${organismData.name}`);
+                        introsWereMissing = true;
+                    }
+                }
+            }
+        }
+
+        // Tell the user if any Wikipedia intros couldn't be found or retrieved for any reason
+        if(introsWereMissing) {
+            wildlifeStatuses.push("Some organisms' Wikipedia excerpts could not be retrieved or found.");
+        }
+
+        return allDisplayData;
+    }
+
+    /*
         Return the page title of the provided Wikipedia URL
     */
     function getPageTitle(wikiUrl) {
         return wikiUrl.split("/").pop();
-    }
-
-    /*
-        Break up the provided array into separate arrays of the provided length.  The provided array is not modified.
-    */
-    function breakUpArray(arr, subLength) {
-        const brokenUpArrays = [];
-
-        if(arr.length > 0) {
-            const quotient = Math.floor(arr.length / subLength);
-            const remainder = arr.length % subLength;
-    
-            for(let i = 0; i < quotient; i++) {
-                const startIndex = i * subLength;
-                const endIndex = startIndex + subLength;
-                brokenUpArrays.push(arr.slice(startIndex, endIndex));
-            }
-    
-            // Store the remainder arrays
-            brokenUpArrays.push(arr.slice(-remainder));
-        }
-
-        return brokenUpArrays;
     }
 
     /*
@@ -752,13 +819,14 @@ function wildlifeSearch() {
             explaintext: "1",
             formatversion: "2",
             format: "json",
-            origin: "*"
+            origin: "*",
+            errorformat: "html"
         }
 
         const promises = [];
         
         // Break up the URLs into groups of 20, to make fewer calls to the MediaWiki API
-        const wikiUrlGroups = breakUpArray(wikiUrls, 20);
+        const wikiUrlGroups = _.chunk(wikiUrls, 20);
         
         for(const wikiUrlGroup of wikiUrlGroups) {
             // Combine all the URLs in this group into page titles separated by "|"
@@ -928,6 +996,11 @@ function wildlifeSearch() {
         Update DOM to reflect the search results
     */
     function endSearch() {
+        // Load the status messages to the DOM
+        for(const wildlifeStatus of wildlifeStatuses) {
+            $(".wildlife-statuses").append(`<p class="wildlife-status">${wildlifeStatus}</p>`);
+        }
+
         // Remove searching message from page
         $(".searching").addClass("hidden");
             
@@ -947,7 +1020,7 @@ function wildlifeSearch() {
         if(startDate > currentDate || endDate > currentDate) {
             console.log(`Error: The user entered a future date.`);
             console.log("");
-            $(".wildlife-status").text(`Unable to search: You cannot use future dates for your search.`);
+            wildlifeStatuses.push("Unable to search: You cannot use future dates for your search.");
 
             return false;
         }
@@ -955,7 +1028,7 @@ function wildlifeSearch() {
         else if(startDate > endDate) {
             console.log("Error: The user entered a start date that was after the end date.");
             console.log("");
-            $(".wildlife-status").text("Unable to search: Your start date cannot be after your end date.");
+            wildlifeStatuses.push("Unable to search: Your start date cannot be after your end date.");
 
             return false;
         }
@@ -1013,8 +1086,9 @@ function wildlifeSearch() {
             // Clear any previous search results
             $(".wildlife-result").remove();
 
-            // Clear any previous errors
-            $(".wildlife-status").text("");
+            // Clear any previous statuses
+            $(".wildlife-statuses").empty();
+            _.remove(wildlifeStatuses, elem => true);
             
             // Tell the user the search is running
             $(".searching").removeClass("hidden");
@@ -1045,31 +1119,7 @@ function wildlifeSearch() {
                 })
                 .then(getWikipediaData)
                 .then(promiseResults => {
-                    console.log(`----------Wikipedia Intros Found----------`);
-                    // Loop through each MediaWiki Response
-                    for(let resultCount = 0; resultCount < promiseResults.length; resultCount++) {
-                        const wikipediaJson = promiseResults[resultCount];
-                        console.log(wikipediaJson);
-                        console.log("");
-    
-                        // Each MediaWiki Response has 20 Wikipedia pages in it (except the last one, which may have fewer)
-                        const pageBracket = resultCount * 20;
-    
-                        // Store the page intro that corresponds to each organism in the page bracket
-                        const wikipediaPages = wikipediaJson.query.pages;
-                        for(let i = 0; i < wikipediaPages.length; i++) {
-                            // Grab the ith organism of the current page bracket
-                            const organismData = allDisplayData[pageBracket + i];
-                            
-                            // Grab the organism's page title and add spaces back into it, so it matches the format of the JSON page titles
-                            const wikiUrl = organismData.wikiUrl;
-                            const organismPageTitle = getPageTitle(wikiUrl).replace(/_/g, " ");
-        
-                            organismData.wikiIntro = wikipediaPages.find(element => element.title === organismPageTitle).extract;
-                        }
-                    }
-    
-                    return allDisplayData;
+                    return processWikiIntros(promiseResults, allDisplayData);
                 })
                 .then(displayData)
                 .catch(handleError)
