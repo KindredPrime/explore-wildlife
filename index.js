@@ -1,4 +1,4 @@
-"use strict";
+"use strict";  
 
 /*
     Set default values for the "Start Date" and "End Date" fields
@@ -567,7 +567,7 @@ function wildlifeSearch() {
     const wildlifePerPage = 200;
 
     // The statuses and errors that occur during the wildlife search
-    const wildlifeStatuses = [];
+    const searchProblems = [];
 
     /*
         Handle all errors that occur
@@ -575,7 +575,7 @@ function wildlifeSearch() {
     function handleError(error) {
         const errorMessage = `An error occurred while searching for wildlife: ${error.message}`;
         console.log(errorMessage);
-        wildlifeStatuses.push(errorMessage);
+        searchProblems.push(errorMessage);
     }
 
     /*
@@ -642,57 +642,52 @@ function wildlifeSearch() {
         console.log("Wildlife data:");
         console.log(data);
 
-        if(data.length === 0) {
-            wildlifeStatuses.push("No wildlife observations found.");
-        }
-        else {
-            for(const organism of data) {
-                const sightingsAsHtml = convertSightingsToHtml(organism.sightings, organism.name);
+        for(const organism of data) {
+            const sightingsAsHtml = convertSightingsToHtml(organism.sightings, organism.name);
 
-                const organismId = cuid();
+            const organismId = cuid();
 
-                $(".wildlife-results").append(`
-                <section class="wildlife-result" data-organism-id="${organismId}">
-                    <div class="sightings-slideshow">
-                        <section class="sightings">
-                            ${sightingsAsHtml}
-                        </section>
-                    </div>
+            $(".wildlife-results").append(`
+            <section class="wildlife-result" data-organism-id="${organismId}">
+                <div class="sightings-slideshow">
+                    <section class="sightings">
+                        ${sightingsAsHtml}
+                    </section>
+                </div>
 
-                    <h3 class="organism-name">${organism.name}</h3>
-                    <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}</a>
-                </section>
-                `);
+                <h3 class="organism-name">${organism.name}</h3>
+                <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}</a>
+            </section>
+            `);
 
-                // Some organisms may not have their wikipedia intros if the Wikipedia fetch couldn't find anything, or if some other error occurred with the fetch
-                if(organism.wikiIntro != undefined) {
-                    $(`.wildlife-result[data-organism-id="${organismId}"]`)
-                        .find(".organism-name")
-                        .after(`
-                        <p>${organism.wikiIntro}</p>
-                        `);
-                }
-
-                // Add previous and next buttons if there is more than one sighting for the organism
-                if(hasMultiplePhotos(organism)) {
-                    $(`.wildlife-result[data-organism-id="${organismId}"]`)
-                    .find(".sightings-slideshow")
-                    .append(`
-                    <button type="button" 
-                    class="slideshow-button left-arrow-button hidden">
-                        <img 
-                        src="images/left-arrow.png" 
-                        alt="previous image" 
-                        class="arrow-img">
-                    </button>
-                    
-                    <button type="button" 
-                    class="slideshow-button right-arrow-button">
-                        <img src="images/right-arrow.png" alt="next image" 
-                        class="arrow-img">
-                    </button>
+            // Some organisms may not have their wikipedia intros if the Wikipedia fetch couldn't find anything, or if some other error occurred with the fetch
+            if(organism.wikiIntro != undefined) {
+                $(`.wildlife-result[data-organism-id="${organismId}"]`)
+                    .find(".organism-name")
+                    .after(`
+                    <p>${organism.wikiIntro}</p>
                     `);
-                }
+            }
+
+            // Add previous and next buttons if there is more than one sighting for the organism
+            if(hasMultiplePhotos(organism)) {
+                $(`.wildlife-result[data-organism-id="${organismId}"]`)
+                .find(".sightings-slideshow")
+                .append(`
+                <button type="button" 
+                class="slideshow-button left-arrow-button hidden">
+                    <img 
+                    src="images/left-arrow.png" 
+                    alt="previous image" 
+                    class="arrow-img">
+                </button>
+                
+                <button type="button" 
+                class="slideshow-button right-arrow-button">
+                    <img src="images/right-arrow.png" alt="next image" 
+                    class="arrow-img">
+                </button>
+                `);
             }
         }
     }
@@ -728,7 +723,7 @@ function wildlifeSearch() {
         if(errorsJson != undefined) {
             for(const errorJson of errorsJson) {
                 console.log(`An error was found in the Wikipedia response: ${errorJson.html}`);
-                wildlifeStatuses.push(`Some wildlife may be missing their description text because there was an error with Wikipedia: '${errorJson.html}'`);
+                searchProblems.push(`Some wildlife may be missing their description text because there was an error with Wikipedia: '${errorJson.html}'`);
             }
         }
 
@@ -793,7 +788,7 @@ function wildlifeSearch() {
 
         // Tell the user if any Wikipedia intros couldn't be found or retrieved for any reason
         if(introsWereMissing) {
-            wildlifeStatuses.push("Some organisms' Wikipedia excerpts could not be retrieved or found.");
+            searchProblems.push("Some organisms' Wikipedia excerpts could not be retrieved or found.");
         }
 
         return allDisplayData;
@@ -950,6 +945,8 @@ function wildlifeSearch() {
         let page = 1;
         let numOrganismsThisPage = 0;
         const allDisplayData = [];
+        let totalResults;
+        let totalPages;
 
         // Loop through all pages of wildlife data
         while(true) {
@@ -959,8 +956,19 @@ function wildlifeSearch() {
                 console.log(wildlifeJson);
                 console.log("");
 
+                // Calculate the total number of pages to process
+                if(page === 1) {
+                    totalResults = wildlifeJson.total_results;
+                    totalPages = Math.ceil(totalResults/wildlifePerPage);
+                    console.log(`Total pages: ${totalPages}`);
+                }
+
                 numOrganismsThisPage = wildlifeJson.results.length;
                 
+                // Avoid telling the user the app is processing page x of 0
+                if(totalPages > 0) {
+                    $(".search-status").text(`Processing page ${page} of ${totalPages} of wildlife observations.`);
+                }
                 const newDisplayData = getRelevantData(wildlifeJson);
                 allDisplayData.push(...newDisplayData);
             })
@@ -974,8 +982,15 @@ function wildlifeSearch() {
             page++;
         }
 
-        const mergedDuplicates = mergeDuplicateOrganismData(allDisplayData);
-        return mergedDuplicates;
+        if(allDisplayData.length > 0) {
+            console.log("Merging duplicate species");
+            $(".search-status").text("Merging duplicate species.");
+            const mergedDuplicates = mergeDuplicateOrganismData(allDisplayData);
+            return mergedDuplicates;
+        }
+        
+        // No results were found
+        return allDisplayData;
     }
 
     /*
@@ -997,12 +1012,14 @@ function wildlifeSearch() {
     */
     function endSearch() {
         // Load the status messages to the DOM
-        for(const wildlifeStatus of wildlifeStatuses) {
-            $(".wildlife-statuses").append(`<p class="wildlife-status">${wildlifeStatus}</p>`);
+        for(const searchProblem of searchProblems) {
+            $(".search-problems").append(`<p class="wildlife-status">${searchProblem}</p>`);
         }
 
         // Remove searching message from page
-        $(".searching").addClass("hidden");
+        console.log("Search complete")
+        $(".search-status").text("Search complete");
+        $(".search-status").addClass("hidden")
             
         $(".wildlife-results").removeClass("hidden");
     }
@@ -1020,7 +1037,7 @@ function wildlifeSearch() {
         if(startDate > currentDate || endDate > currentDate) {
             console.log(`Error: The user entered a future date.`);
             console.log("");
-            wildlifeStatuses.push("Unable to search: You cannot use future dates for your search.");
+            searchProblems.push("Unable to search: You cannot use future dates for your search.");
 
             return false;
         }
@@ -1028,7 +1045,7 @@ function wildlifeSearch() {
         else if(startDate > endDate) {
             console.log("Error: The user entered a start date that was after the end date.");
             console.log("");
-            wildlifeStatuses.push("Unable to search: Your start date cannot be after your end date.");
+            searchProblems.push("Unable to search: Your start date cannot be after your end date.");
 
             return false;
         }
@@ -1085,13 +1102,16 @@ function wildlifeSearch() {
 
             // Clear any previous search results
             $(".wildlife-result").remove();
+            $(".no-results").remove();
 
             // Clear any previous statuses
-            $(".wildlife-statuses").empty();
-            _.remove(wildlifeStatuses, elem => true);
+            $(".search-problems").empty();
+            _.remove(searchProblems, elem => true);
             
             // Tell the user the search is running
-            $(".searching").removeClass("hidden");
+            console.log("Starting search")
+            $(".search-status").text("Searching...");
+            $(".search-status").removeClass("hidden");
 
             // Grab the user input
             const addressCoordinates = $("#found-address").val();
@@ -1112,16 +1132,46 @@ function wildlifeSearch() {
 
                 getAllWildlifeData(latitude, longitude, radius, iconicTaxa, name, startDate, endDate)
                 .then(filteredData => {
-                    allDisplayData = filteredData;
-    
-                    // Create an array of just the Wikipedia URLs
-                    return allDisplayData.map(data => data.wikiUrl);
+                    if(filteredData.length > 0) {
+                        allDisplayData = filteredData;
+        
+                        // Create an array of just the Wikipedia URLs
+                        return allDisplayData.map(data => data.wikiUrl);
+                    }
+
+                    // No valid wildlife data was found
+                    return [];
                 })
-                .then(getWikipediaData)
+                .then(wikiUrls => {
+                    if(wikiUrls.length > 0) {
+                        console.log("Fetching Wikipedia excerpts.")
+                        $(".search-status").text("Fetching Wikipedia excerpts.");
+                        return getWikipediaData(wikiUrls);
+                    }
+
+                    // No promises are started because there are no wikiURLs to fetch from
+                    return [];
+                })
                 .then(promiseResults => {
-                    return processWikiIntros(promiseResults, allDisplayData);
+                    if(promiseResults.length > 0) {
+                        console.log("Processing Wikipedia excerpts.")
+                        $(".search-status").text("Processing Wikipedia excerpts.");
+                        return processWikiIntros(promiseResults, allDisplayData);
+                    }
+
+                    // No display data is returned because there is no wildlife data
+                    return [];
                 })
-                .then(displayData)
+                .then(data => {
+                    if(data.length > 0) {
+                        console.log("Converting data to displayable format.")
+                        $(".search-status").text("Converting data to displayable format.");
+                        displayData(data);
+                    }
+                    else {
+                        $(".wildlife-results").append(`<p class="no-results">No wildlife observations found.</p>`);
+                    }
+                })
                 .catch(handleError)
                 .finally(endSearch);
             }
