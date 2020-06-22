@@ -20,6 +20,7 @@
 
 main {
     padding: 20px;
+    margin: 0px;
 }
 
 header {
@@ -38,17 +39,17 @@ header {
     display: block;
 }
 
-.wildlife-types {
-    width: 100%;
-}
-
 .search-form fieldset {
     margin-top: 15px;
     display: block;
     width: max-content;
 }
 
-.wildlife-types div {
+.wildlife-type-group {
+    display: block;
+}
+
+.wildlife-type {
     display: inline-block;
     margin-right: 15px;
 }
@@ -123,6 +124,14 @@ header {
     cursor: pointer;
 }
 
+.wildlife-result {
+    padding: 5px;
+}
+
+.wildlife-result a, .wildlife-result p {
+    overflow-wrap: break-word;
+}
+
 .modal {
     display: none;
 }
@@ -145,9 +154,8 @@ header {
 
 .modal__container {
     background-color: #fff;
-    padding: 30px;
     max-width: 500px;
-    max-height: 100vh;
+    max-height: 85%;
     border-radius: 4px;
     overflow-y: auto;
 }
@@ -175,4 +183,33 @@ header {
 
 .address-component {
     display: block;
+}
+
+@media screen and (min-width: 0px) {
+    .search-header {
+        text-align: center;
+    }
+
+    .search-form {
+        margin-left: auto;
+        margin-right: auto;
+        width: max-content;
+    }
+
+    #search-country {
+        width: 235px;
+    }
+
+    .modal__container {
+        padding: 20px;
+        width: 85%;
+    }
+
+    .modal__header {
+        margin-bottom: 30px;
+    }
+
+    #addresses-modal-content {
+        padding: 0px;
+    }
 }
