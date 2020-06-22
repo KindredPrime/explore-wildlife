@@ -2,13 +2,18 @@
     box-sizing: border-box;
 }
 
+body {
+    margin: 0px;
+}
+
+article {
+    margin: 0px;
+}
+
 .navbar {
     background-color: black;
     border-bottom: 1px solid black;
     position: fixed;
-    width: 100%;
-    top: 0px;
-    left: 0px;
     z-index: 2;
 }
 
@@ -19,7 +24,9 @@
 }
 
 main {
-    padding: 20px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    padding-right: 20px;
     margin: 0px;
 }
 
@@ -186,6 +193,16 @@ header {
 }
 
 @media screen and (min-width: 0px) {
+    main {
+        margin-top: 40px;
+    }
+
+    .navbar {
+        width: 100%;
+        top: 0px;
+        left: 0px;
+    }
+
     .search-header {
         text-align: center;
     }
@@ -215,6 +232,16 @@ header {
 }
 
 @media screen and (min-width: 700px) {
+    main {
+        margin-top: 40px;
+    }
+    
+    .navbar {
+        width: 100%;
+        top: 0px;
+        left: 0px;
+    }
+
     .wildlife-result {
         display: inline-block;
         vertical-align: top;
@@ -225,6 +252,19 @@ header {
 }
 
 @media screen and (min-width: 1100px) {
+    main {
+        padding-top: 20px;
+        margin-top: 0px;
+        margin-left: 80px;
+    }
+
+    .navbar {
+        height: 100%;
+        width: 80px;
+        top: 0px;
+        left: 0px;
+    }
+
     .wildlife-result {
         display: inline-block;
         width: 25%;
