@@ -68,18 +68,26 @@ header {
     display: none;
 }
 
+.wildlife-results h2 {
+    text-align: center;
+}
+
 .wildlife-result {
     margin-bottom: 20px;
-    padding-bottom: 10px;
+    padding: 5px;
     border-bottom: 5px solid black;
+}
+
+.wildlife-result a, .wildlife-result p {
+    overflow-wrap: break-word;
 }
 
 .sightings-slideshow {
     position: relative;
+    display: block;
     margin-left: auto;
     margin-right: auto;
     width: min-content;
-    padding: 15px;
 }
 
 .sighting {
@@ -122,14 +130,6 @@ header {
 
 .slideshow-button:hover {
     cursor: pointer;
-}
-
-.wildlife-result {
-    padding: 5px;
-}
-
-.wildlife-result a, .wildlife-result p {
-    overflow-wrap: break-word;
 }
 
 .modal {
@@ -211,5 +211,25 @@ header {
 
     #addresses-modal-content {
         padding: 0px;
+    }
+}
+
+@media screen and (min-width: 700px) {
+    .wildlife-result {
+        display: inline-block;
+        vertical-align: top;
+        width: 40%;
+        margin-left: 4%;
+        margin-right: 4%;
+    }
+}
+
+@media screen and (min-width: 1100px) {
+    .wildlife-result {
+        display: inline-block;
+        width: 25%;
+        vertical-align: top;
+        margin-left: 4%;
+        margin-right: 4%;
     }
 }
