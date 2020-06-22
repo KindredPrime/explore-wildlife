@@ -118,6 +118,18 @@ function addressSearch() {
     ];
 
     /*
+        Update DOM elements to reflect the search for addresses has ended
+    */
+    function endSearch() {
+        MicroModal.show("addresses-modal");
+
+        // Remove "Searching..." message
+        $(".find-address").text("Find Address");
+
+        $(".find-address").prop("disabled", false);
+    }
+
+    /*
         Handle all errors that occur
     */
     function handleError(error) {
@@ -225,11 +237,6 @@ function addressSearch() {
             console.log(message);
             $(".find-addresses-status").text(message);
         }
-            
-        // Remove "Searching..." message
-        $(".find-address").text("Find Address");
-
-        MicroModal.show("addresses-modal");
     }
 
     /*
@@ -479,6 +486,8 @@ function addressSearch() {
         $(".find-address").click(event => {
             event.preventDefault();
 
+            $(".find-address").prop("disabled", true);
+
             resetEnvironment();
 
             // Grab user input
@@ -515,12 +524,13 @@ function addressSearch() {
                     return uniqueAddressData;
                 })
                 .then(displayAddresses)
-                .catch(handleError);
+                .catch(handleError)
+                .finally(endSearch);
             }
             else {
                 $(".find-addresses-status").text('You must fill out the "Street Name" field.');
                 console.log(`Error while finding address: The "Street Name" field wasn't filled out.`);
-                MicroModal.show("addresses-modal");
+                endSearch();
             }
         });
     }
@@ -1022,6 +1032,8 @@ function wildlifeSearch() {
         $(".search-status").addClass("hidden")
             
         $(".wildlife-results").removeClass("hidden");
+
+        $(".wildlife-submit").prop("disabled", false);
     }
 
     /*
@@ -1096,6 +1108,8 @@ function wildlifeSearch() {
     function handleSearchSubmit() {
         $(".search-form.wildlife-form").submit(event => {
             event.preventDefault();
+
+            $(".wildlife-submit").prop("disabled", true);
 
             // Hide the search results section from the page
             $(".wildlife-results").addClass("hidden");
