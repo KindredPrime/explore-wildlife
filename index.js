@@ -589,57 +589,85 @@ function wildlifeSearch() {
     }
 
     /*
-        Return true if the organism has multiple photos
+        Return a new array holding the provided sightings converted into img elemnts and captions for those images
     */
-    function hasMultiplePhotos(organism) {
-        const sightings = organism.sightings;
-        if(sightings.length > 1) {
-            return true;
+    function createPhotosAndCaptions(sightings, organismName) {
+        const photosAndCaptions = [];
+
+        for(const sighting of sightings) {
+            for(const photoUrl of sighting.photoUrls) {
+                const photoAndCaption = {};
+                photoAndCaption.photo = `<img src="${photoUrl}" alt="${organismName}" class="organism-photo">`;
+                photoAndCaption.caption = `<p>Observed by iNaturalist user ${sighting.observer} on ${sighting.date}</p>`;
+                photosAndCaptions.push(photoAndCaption);
+            }
         }
-        else if(sightings[0].photoUrls.length > 1) {
-            return true;
-        }
-            
-        return false;
+
+        return photosAndCaptions;
     }
 
     /*
         Convert the wildlife sightings of the provided organism to an HTML string to be displayed to the DOM
     */
     function convertSightingsToHtml(sightings, name) {
-        const photosAndCaptions = [];
-        for(const sighting of sightings) {
-            for(const photoUrl of sighting.photoUrls) {
-                const photo = {};
-                photo.img = `<img src="${photoUrl}" alt="${name}" class="organism-photo">`;
-                photo.caption = `<p>Observed by iNaturalist user ${sighting.observer} on ${sighting.date}</p>`;
-                photosAndCaptions.push(photo);
-            }
-        }
+        const photosAndCaptions = createPhotosAndCaptions(sightings, name);
 
-        // Convert the photos and captions to HTML
-        let isFirstPhoto = true;
-        const sightingsAsHtml = photosAndCaptions.map(photo => {
+        let onFirstPhoto = true;
+        const sightingsAsHtml = photosAndCaptions.map(photoAndCaption => {
             const sightingId = cuid();
-
-            if(isFirstPhoto) {
-                isFirstPhoto = false;
-
-                return `
-                <div class="sighting default-sighting js-current-sighting" data-sighting-id="${sightingId}">
-                    ${photo.img}
-                    ${photo.caption}
-                </div>
-                `;
+            
+            // Add extra CSS classes for the first photo
+            const sightingClasses = ["sighting"];
+            if(onFirstPhoto) {
+                sightingClasses.push("default-sighting");
+                sightingClasses.push("js-current-sighting");
             }
-            else {
-                return `
-                <div class="sighting" data-sighting-id="${sightingId}">
-                    ${photo.img}
-                    ${photo.caption}
-                </div>
-                `;
+            const classesString = sightingClasses.join(" ");
+
+            // Add arrow buttons if there are multiple photos
+            const photoElements = [photoAndCaption.photo];
+            if(photosAndCaptions.length > 1) {
+                // Add the hidden class for the left arrow button of the first photo
+                const leftButtonClasses = ["slideshow-button", "left-arrow-button"];
+                if(onFirstPhoto) {
+                    leftButtonClasses.push("hidden");
+                }
+
+                // Add the left arrow button
+                photoElements.push(`
+                <button type="button" 
+                class="${leftButtonClasses.join(" ")}">
+                    <img 
+                    src="Images/left-arrow.png" 
+                    alt="previous image" 
+                    class="arrow-img">
+                </button>
+                `);
+
+                // Add the right arrow button
+                photoElements.push(`
+                <button type="button" 
+                class="slideshow-button right-arrow-button">
+                    <img src="Images/right-arrow.png" alt="next image" 
+                    class="arrow-img">
+                </button>
+                `);
             }
+            const photoElementsString = photoElements.join(" ");
+            
+            // Done working with the first photo
+            if(onFirstPhoto) {
+                onFirstPhoto = false;
+            }
+
+            return `
+            <div class="${classesString}" data-sighting-id="${sightingId}">
+                <div class="sighting-photo">
+                    ${photoElementsString}
+                </div>
+                ${photoAndCaption.caption}
+            </div>
+            `;
         }).join("\n");
 
         return sightingsAsHtml;
@@ -677,27 +705,6 @@ function wildlifeSearch() {
                     .after(`
                     <p>${organism.wikiIntro}</p>
                     `);
-            }
-
-            // Add previous and next buttons if there is more than one sighting for the organism
-            if(hasMultiplePhotos(organism)) {
-                $(`.wildlife-result[data-organism-id="${organismId}"]`)
-                .find(".sightings-slideshow")
-                .append(`
-                <button type="button" 
-                class="slideshow-button left-arrow-button hidden">
-                    <img 
-                    src="Images/left-arrow.png" 
-                    alt="previous image" 
-                    class="arrow-img">
-                </button>
-                
-                <button type="button" 
-                class="slideshow-button right-arrow-button">
-                    <img src="Images/right-arrow.png" alt="next image" 
-                    class="arrow-img">
-                </button>
-                `);
             }
         }
     }
@@ -1314,14 +1321,14 @@ function handleSightingTransitions() {
     }
 
     /*
-        Shows/Hides the arrow buttons based on which sighting in the slideshow 
-        is currently being displayed
+        Shows/Hides the arrow buttons for the current sighting of the provided organism
     */
     function updateButtonsDisplayed(organismId) {
         const currentOrganism = 
             $(`.wildlife-result[data-organism-id="${organismId}"]`);
-        const leftArrow = currentOrganism.find(".left-arrow-button");
-        const rightArrow = currentOrganism.find(".right-arrow-button");
+        const currentSighting = currentOrganism.find("div.js-current-sighting");
+        const leftArrow = currentSighting.find(".left-arrow-button");
+        const rightArrow = currentSighting.find(".right-arrow-button");
 
         if(onLastSighting(organismId)) {
             leftArrow.show();

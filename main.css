@@ -124,6 +124,10 @@ header {
     display: block;
 }
 
+.sighting-photo {
+    position: relative;
+}
+
 .slideshow-button {
     position: absolute;
     padding: 0px;
