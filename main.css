@@ -49,16 +49,34 @@ header {
 .search-form fieldset {
     margin-top: 15px;
     display: block;
+    border: 1px solid black;
+    padding: 10px;
+}
+
+.wildlife-types {
+    width: 275px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.time-period {
     width: max-content;
 }
 
+.wildlife-type-groups {
+    display: flex;
+    justify-content: space-between;
+}
+
 .wildlife-type-group {
-    display: block;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .wildlife-type {
-    display: inline-block;
-    margin-right: 15px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .wildlife-types input {
