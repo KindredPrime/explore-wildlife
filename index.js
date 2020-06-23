@@ -687,14 +687,14 @@ function wildlifeSearch() {
                 <button type="button" 
                 class="slideshow-button left-arrow-button hidden">
                     <img 
-                    src="images/left-arrow.png" 
+                    src="Images/left-arrow.png" 
                     alt="previous image" 
                     class="arrow-img">
                 </button>
                 
                 <button type="button" 
                 class="slideshow-button right-arrow-button">
-                    <img src="images/right-arrow.png" alt="next image" 
+                    <img src="Images/right-arrow.png" alt="next image" 
                     class="arrow-img">
                 </button>
                 `);
