@@ -10,11 +10,29 @@ article {
     margin: 0px;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 900;
+    font-family: 'Galindo', cursive;
+}
+
+a {
+    font-size: 16px;
+    line-height: 20px;
+}
+
+p, a {
+    font-family: 'Mukta', sans-serif;
+}
+
 .navbar {
     background-color: black;
     border-bottom: 1px solid black;
     position: fixed;
     z-index: 2;
+}
+
+.navbar * {
+    font-family: 'EB Garamond', serif;
 }
 
 .search-button, .about-button {
@@ -128,6 +146,11 @@ header {
     position: relative;
 }
 
+.caption {
+    font-size: 16px;
+    line-height: 18px;
+}
+
 .slideshow-button {
     position: absolute;
     padding: 0px;
@@ -161,6 +184,10 @@ header {
 
 .slideshow-button:hover {
     cursor: pointer;
+}
+
+.organism-name {
+    text-align: center;
 }
 
 .modal {
@@ -221,6 +248,26 @@ header {
         margin-top: 40px;
     }
 
+    h1 {
+        font-size: 34px;
+        line-height: 44px;
+    }
+
+    h2 {
+        font-size: 26px;
+        line-height: 38px;
+    }
+
+    h3 {
+        font-size: 18px;
+        line-height: 26px;
+    }
+
+    p {
+        font-size: 16px;
+        line-height: 19px;
+    }
+
     .navbar {
         width: 100%;
         top: 0px;
@@ -259,6 +306,26 @@ header {
     main {
         margin-top: 40px;
     }
+
+    h1 {
+        font-size: 36px;
+        line-height: 48px;
+    }
+
+    h2 {
+        font-size: 28px;
+        line-height: 44px;
+    }
+
+    h3 {
+        font-size: 19px;
+        line-height: 28px;
+    }
+
+    p {
+        font-size: 18px;
+        line-height: 22px;
+    }
     
     .navbar {
         width: 100%;
@@ -280,6 +347,26 @@ header {
         padding-top: 20px;
         margin-top: 0px;
         margin-left: 80px;
+    }
+
+    h1 {
+        font-size: 36px;
+        line-height: 48px;
+    }
+
+    h2 {
+        font-size: 28px;
+        line-height: 44px;
+    }
+
+    h3 {
+        font-size: 19px;
+        line-height: 28px;
+    }
+
+    p {
+        font-size: 20px;
+        line-height: 22px;
     }
 
     .navbar {

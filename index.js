@@ -598,7 +598,7 @@ function wildlifeSearch() {
             for(const photoUrl of sighting.photoUrls) {
                 const photoAndCaption = {};
                 photoAndCaption.photo = `<img src="${photoUrl}" alt="${organismName}" class="organism-photo">`;
-                photoAndCaption.caption = `<p>Observed by iNaturalist user ${sighting.observer} on ${sighting.date}</p>`;
+                photoAndCaption.caption = `<p class="caption">Observed by iNaturalist user ${sighting.observer} on ${sighting.date}</p>`;
                 photosAndCaptions.push(photoAndCaption);
             }
         }
