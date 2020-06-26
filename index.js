@@ -623,6 +623,8 @@ function wildlifeSearch() {
     // The statuses and errors that occur during the wildlife search
     const searchProblems = [];
 
+    const newWindowIconGreen = `<img class="new-window-icon-green" src="Images/new-window-icon-green.png" alt="new window">`;
+
     /*
         Handle all errors that occur
     */
@@ -738,7 +740,7 @@ function wildlifeSearch() {
                 </div>
 
                 <h3 class="organism-name">${organism.name}</h3>
-                <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}</a>
+                <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}${newWindowIconGreen}</a>
             </li>
             `);
 
