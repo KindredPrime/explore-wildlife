@@ -729,8 +729,8 @@ function wildlifeSearch() {
 
             const organismId = cuid();
 
-            $(".wildlife-results").append(`
-            <section class="wildlife-result" data-organism-id="${organismId}">
+            $(".wildlife-results .results-list").append(`
+            <li class="wildlife-result" data-organism-id="${organismId}">
                 <div class="sightings-slideshow">
                     <section class="sightings">
                         ${sightingsAsHtml}
@@ -739,7 +739,7 @@ function wildlifeSearch() {
 
                 <h3 class="organism-name">${organism.name}</h3>
                 <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}</a>
-            </section>
+            </li>
             `);
 
             // Some organisms may not have their wikipedia intros if the Wikipedia fetch couldn't find anything, or if some other error occurred with the fetch
@@ -1408,7 +1408,7 @@ $(function() {
     MicroModal.show('about-modal', {
         disableFocus: true
     });
-    
+
     setDefaultDates();
     addressSearch();
     selectAddressOption();
