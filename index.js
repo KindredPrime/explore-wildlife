@@ -1250,41 +1250,6 @@ function wildlifeSearch() {
 }
 
 /*
-    Change the page displayed in the app when a user clicks particular buttons
-*/
-function loadPages() {
-    /*
-        Handle loading the Start page when the New Search button is clicked
-    */
-    function handleNewSearchButtonClick() {
-        $(".search-button").click(event => {
-            switchToPage("search-page");
-        })
-    }
-    
-    /*
-        Display the provided page, and hide all other pages
-    */
-    function switchToPage(pageClass) {
-        const displayingPage = $(`article.${pageClass}`);
-        displayingPage.removeClass("hidden");
-        displayingPage.siblings("article").addClass("hidden");
-    }
-
-    /*
-        Handle loading the About page when the About button is clicked
-    */
-    function handleAboutButtonClick() {
-        $(".about-button").click(event => {
-            switchToPage("about-page");
-        });
-    }
-
-    handleAboutButtonClick();
-    handleNewSearchButtonClick();
-}
-
-/*
     Handles switching between sightings in the sighting slideshows for wildlife search results
 */
 function handleSightingTransitions() {
@@ -1440,11 +1405,14 @@ function handleSightingTransitions() {
 
 $(function() {
     MicroModal.init();
+    MicroModal.show('about-modal', {
+        disableFocus: true
+    });
+    
     setDefaultDates();
     addressSearch();
     selectAddressOption();
     checkWildlifeType();
     wildlifeSearch();
-    loadPages();
     handleSightingTransitions();
 });

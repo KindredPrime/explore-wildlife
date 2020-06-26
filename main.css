@@ -64,11 +64,10 @@ button {
     font-family: 'EB Garamond', serif;
 }
 
-.search-button, .about-button {
+.about-button {
     background-color: transparent;
     color: #05F710;
-    margin-right: 20px;
-    border: 0px;
+    border: none;
     font-size: 20px;
     cursor: pointer;
 }
