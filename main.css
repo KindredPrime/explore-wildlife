@@ -11,9 +11,12 @@ article {
     margin: 0px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2 {
     font-weight: 900;
-    font-family: 'Galindo', cursive;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Pangolin', cursive;
 }
 
 a, input {
@@ -373,7 +376,7 @@ fieldset {
     }
 
     h3 {
-        font-size: 18px;
+        font-size: 20px;
         line-height: 26px;
     }
 
@@ -437,7 +440,7 @@ fieldset {
     }
 
     h3 {
-        font-size: 19px;
+        font-size: 21px;
         line-height: 28px;
     }
 
@@ -488,7 +491,7 @@ fieldset {
     }
 
     h3 {
-        font-size: 19px;
+        font-size: 21px;
         line-height: 28px;
     }
 
