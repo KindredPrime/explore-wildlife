@@ -206,6 +206,11 @@ function addressSearch() {
                 const radioInput = `<input type="radio" id="${addressOption.placeId}" class="address-option" name="address" value="${addressOption.lat},${addressOption.lon}">`;
                 htmlElements.push(radioInput);
 
+                const customRadioInput = `
+                <span class="custom-radio"></span>
+                `;
+                htmlElements.push(customRadioInput);
+
                 let addressAsText = convertAddressToHtml(addressOption.addressComponents);
                 const labelTag = `
                 <label for="${addressOption.placeId}" class="address-option-label">
@@ -217,15 +222,18 @@ function addressSearch() {
                 // Also include a break tag
                 htmlElements.push("<br>");
 
-                const htmlContent = htmlElements.join("\n");
-                $(".addresses-results").append(htmlContent);
+                const htmlContent = `
+                <div class="address-option-div">
+                    ${htmlElements.join("\n")}
+                </div>`;
+                $(".select-address").append(htmlContent);
             }
 
             // Set the address options to be required
             $(".address-option").first().attr("required", true);
 
             // Create the submit button
-            $(".addresses-results").append(`
+            $(".select-address").append(`
             <button type="submit" class="submit-button address-submit">
                 Submit Selected Address
             </button>
@@ -476,7 +484,7 @@ function addressSearch() {
         $(".find-addresses-status").text("");
 
         // Clear previous addresses results
-        $(".addresses-results").empty();
+        $(".select-address").empty();
     }
 
     /*
@@ -541,17 +549,30 @@ function addressSearch() {
     function enableWildlifeSearch() {
         // Enable all form elements in the wildlife search except for the "Found Address" field
         $(".wildlife-form *:disabled").not("#found-address").removeAttr("disabled");
+
+        // Add the "checked" class to all custom checkboxes that are checked by default
+        const customCheckboxes = $(".custom-checkbox");
+        for(const customCheckbox of customCheckboxes) {
+            const realCheckbox = $(customCheckbox).siblings(`input[type="checkbox"]`);
+            const checkedAttr = realCheckbox.attr("checked");
+            if(checkedAttr != undefined && checkedAttr != false) {
+                $(customCheckbox).addClass("checked");
+            }
+        }
+
+        // Remove the "disabled" class from the custom checkboxes for the wildlife types
+        $(".custom-checkbox").removeClass("disabled");
     }
 
     /*
         Create an event listener for when the address is submitted from the modal
     */
     function handleSubmitAddress() {
-        $(".addresses-results").submit(event => {
+        $(".select-address").submit(event => {
             event.preventDefault();
            
             // Get the selected coordinates
-            const coordinates = $(".addresses-results input[name='address']:checked").val();
+            const coordinates = $(".select-address input[name='address']:checked").val();
             console.log(`Selected coordinates: ${coordinates}`);
 
             // Store the selected coordinates in the "Found Address" field
@@ -570,7 +591,30 @@ function addressSearch() {
 }
 
 /*
-    Searches for wildlife
+    "Check the custom radio button for an address option when the user clicks it
+*/
+function selectAddressOption() {
+    $(".select-address").on("click", ".address-option", event => {
+        // "Uncheck" all custom radio buttons
+        $(".custom-radio").removeClass("checked");
+
+        const selectedCustomRadio = $(event.currentTarget).siblings(".custom-radio");
+        selectedCustomRadio.addClass("checked");
+    });
+}
+
+/*
+    Check/Uncheck the custom checkbox for the wildlife type when the user clicks it
+*/
+function checkWildlifeType() {
+    $(`.wildlife-type input[type="checkbox"]`).click(event => {
+        const customCheckbox = $(event.currentTarget).siblings(".custom-checkbox");
+        customCheckbox.toggleClass("checked");
+    });
+}
+
+/*
+    Search for wildlife
 */
 function wildlifeSearch() {
     // The number of observations returned by the iNaturalist API per page of observations
@@ -597,7 +641,7 @@ function wildlifeSearch() {
         for(const sighting of sightings) {
             for(const photoUrl of sighting.photoUrls) {
                 const photoAndCaption = {};
-                photoAndCaption.photo = `<img src="${photoUrl}" alt="${organismName}" class="organism-photo">`;
+                photoAndCaption.photo = `<img class="organism-photo" src="${photoUrl}" alt="${organismName}">`;
                 photoAndCaption.caption = `<p class="caption">Observed by iNaturalist user ${sighting.observer} on ${sighting.date}</p>`;
                 photosAndCaptions.push(photoAndCaption);
             }
@@ -662,7 +706,7 @@ function wildlifeSearch() {
 
             return `
             <div class="${classesString}" data-sighting-id="${sightingId}">
-                <div class="sighting-photo">
+                <div class="organism-photo-div">
                     ${photoElementsString}
                 </div>
                 ${photoAndCaption.caption}
@@ -1398,6 +1442,8 @@ $(function() {
     MicroModal.init();
     setDefaultDates();
     addressSearch();
+    selectAddressOption();
+    checkWildlifeType();
     wildlifeSearch();
     loadPages();
     handleSightingTransitions();

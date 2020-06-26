@@ -4,6 +4,7 @@
 
 body {
     margin: 0px;
+    background-color: #593E00;
 }
 
 article {
@@ -15,18 +16,43 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Galindo', cursive;
 }
 
-a {
+a, input {
     font-size: 16px;
     line-height: 20px;
 }
 
-p, a {
+p, h1, h2, h3, h4, h5, h6, label, legend {
+    color: white;
+}
+
+h1, h2 {
+    text-shadow: -3px 0 black, 0 3px black, 3px 0 black, 0 -3px black;
+}
+
+h3, h4, h5, h6, legend {
+    text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+}
+
+p, label {
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+p, a, label, legend, input {
     font-family: 'Mukta', sans-serif;
+}
+
+a {
+    color: #05F710;
+}
+
+button {
+    background-color: #05F710;
+    font-weight: 700;
+    padding: 5px;
 }
 
 .navbar {
     background-color: black;
-    border-bottom: 1px solid black;
     position: fixed;
     z-index: 2;
 }
@@ -37,8 +63,11 @@ p, a {
 
 .search-button, .about-button {
     background-color: transparent;
-    color: white;
+    color: #05F710;
     margin-right: 20px;
+    border: 0px;
+    font-size: 20px;
+    cursor: pointer;
 }
 
 main {
@@ -64,11 +93,20 @@ header {
     display: block;
 }
 
-.search-form fieldset {
+input, select {
+    border: 2px solid #807C73;
+}
+
+fieldset {
     margin-top: 15px;
     display: block;
-    border: 1px solid black;
+    border: 2px solid #807C73;
     padding: 10px;
+}
+
+.search-form *:disabled {
+    background-color: #807C73;
+    color: rgba(255,255,255,0.5);
 }
 
 .wildlife-types {
@@ -95,11 +133,41 @@ header {
 .wildlife-type {
     margin-left: 5px;
     margin-right: 5px;
+    position: relative;
+    margin-bottom: 26px;
 }
 
-.wildlife-types input {
-    margin-left: auto;
-    margin-right: auto;
+.wildlife-type input {
+    opacity: 0;
+    z-index: 1;
+}
+
+.wildlife-type input, .custom-checkbox {
+    position: absolute;
+    left: 50%;
+    margin-left: -6px;
+}
+
+/* Overlays the real checkbox */
+.custom-checkbox {
+    width: 13px;
+    height: 13px;
+    background-color: white;
+    border-radius: 2px;
+    top: 19px;
+    z-index: 0;
+    opacity: 0.75;
+}
+
+.custom-checkbox.disabled {
+    background-color: #807C73;
+    opacity: 0.75;
+}
+
+/* "Checked" Overlay */
+.custom-checkbox.checked {
+    background-color: #05F710;
+    opacity: 1.0;
 }
 
 .submit-button {
@@ -142,8 +210,12 @@ header {
     display: block;
 }
 
-.sighting-photo {
+.organism-photo-div {
     position: relative;
+}
+
+.organism-photo {
+    border: 1px solid black;
 }
 
 .caption {
@@ -211,7 +283,7 @@ header {
 }
 
 .modal__container {
-    background-color: #fff;
+    background-color: white;
     max-width: 500px;
     max-height: 85%;
     border-radius: 4px;
@@ -227,6 +299,8 @@ header {
 .modal__title {
     margin-top: 0;
     margin-bottom: 0;
+    color: black;
+    text-shadow: none;
 }
 
 .modal__close {
@@ -234,9 +308,44 @@ header {
     border: 0;
 }
 
-.addresses-results input[type="radio"] {
+.modal__content *{
+    color: black;
+    text-shadow: none;
+}
+
+.address-option-div {
+    position: relative;
+}
+
+.address-option-label, .address-option-label * {
+    margin-left: 20px;
+}
+
+.address-option {
+    opacity: 0;
+    z-index: 1;
+    margin: 0px;
+}
+
+.address-option, .custom-radio {
+    position: absolute;
+    top: 2px;
+    left: 0px;
+}
+
+.custom-radio {
+    border: 1px solid black;
+    background: white;
     display: inline-block;
-    margin-top: 15px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    z-index: 0;
+    cursor: pointer;
+}
+
+.custom-radio.checked {
+    background-color: black;
 }
 
 .address-component {
@@ -244,6 +353,11 @@ header {
 }
 
 @media screen and (min-width: 0px) {
+    .navbar {
+        width: 100%;
+        border-bottom: 1px solid #807C73;
+    }
+    
     main {
         margin-top: 40px;
     }
@@ -303,6 +417,11 @@ header {
 }
 
 @media screen and (min-width: 700px) {
+    .navbar {
+        width: 100%;
+        border-bottom: 1px solid #807C73;
+    }
+
     main {
         margin-top: 40px;
     }
@@ -343,6 +462,15 @@ header {
 }
 
 @media screen and (min-width: 1100px) {
+    .navbar {
+        height: 100%;
+        width: 80px;
+        top: 0px;
+        left: 0px;
+        border-right: 1px solid #807C73;
+        border-bottom: none;
+    }
+
     main {
         padding-top: 20px;
         margin-top: 0px;
@@ -367,13 +495,6 @@ header {
     p {
         font-size: 20px;
         line-height: 22px;
-    }
-
-    .navbar {
-        height: 100%;
-        width: 80px;
-        top: 0px;
-        left: 0px;
     }
 
     .wildlife-result {
