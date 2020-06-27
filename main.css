@@ -11,6 +11,10 @@ article {
     margin: 0px;
 }
 
+h1 {
+    margin-bottom: 25px;
+}
+
 h1, h2 {
     font-weight: 900;
 }
@@ -46,6 +50,14 @@ p, a, label, legend, input {
 
 a {
     color: #05F710;
+}
+
+p {
+    margin-bottom: 20px;
+}
+
+h3 {
+    margin-bottom: 15px;
 }
 
 button {
@@ -84,23 +96,30 @@ header {
 }
 
 .search-header {
-    margin-bottom: 5px;
+    margin-bottom: 15px;
+    text-align: center;
 }
 
-.search-form input, .search-form fieldset, .search-form select{
-    margin-bottom: 10px;
-}
-
-.search-form input, .search-form label {
-    display: block;
+.search-form {
+    margin-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    width: max-content;
 }
 
 input, select {
     border: 2px solid #807C73;
 }
 
+.search-form.address input, .search-form.address fieldset, .search-form.address select{
+    margin-bottom: 15px;
+}
+
+.search-form input, .search-form label {
+    display: block;
+}
+
 fieldset {
-    margin-top: 15px;
     display: block;
     border: 2px solid #807C73;
     padding: 10px;
@@ -111,14 +130,23 @@ fieldset {
     color: rgba(255,255,255,0.5);
 }
 
+.wildlife-form {
+    border: 2px solid #807C73;
+    padding: 15px;
+}
+
+h3.wildlife-search {
+    text-align: center;
+}
+
+.wildlife-form input, .wildlife-form fieldset, .wildlife-form select {
+    margin-bottom: 20px;
+}
+
 .wildlife-types {
     width: 275px;
     margin-left: auto;
     margin-right: auto;
-}
-
-.time-period {
-    width: max-content;
 }
 
 .wildlife-type-groups {
@@ -172,9 +200,12 @@ fieldset {
     opacity: 1.0;
 }
 
-.submit-button {
-    margin-top: 10px;
-    margin-bottom: 30px;
+.time-period {
+    width: max-content;
+}
+
+#search-end {
+    margin-bottom: 5px;
 }
 
 .hidden {
@@ -206,6 +237,7 @@ fieldset {
 .sighting {
     display: none;
     width: 100%;
+    margin-bottom: 20px;
 }
 
 .default-sighting {
@@ -221,6 +253,7 @@ fieldset {
 }
 
 .caption {
+    margin-top: 3px;
     font-size: 16px;
     line-height: 18px;
 }
@@ -262,6 +295,7 @@ fieldset {
 
 .organism-name {
     text-align: center;
+    margin-bottom: 5px;
 }
 
 .modal {
@@ -362,7 +396,7 @@ fieldset {
     }
     
     main {
-        margin-top: 40px;
+        margin-top: 50px;
     }
 
     h1 {
@@ -391,14 +425,8 @@ fieldset {
         left: 0px;
     }
 
-    .search-header {
-        text-align: center;
-    }
-
-    .search-form {
-        margin-left: auto;
-        margin-right: auto;
-        width: max-content;
+    legend.address {
+        font-size: 18px;
     }
 
     #search-country {
@@ -430,7 +458,7 @@ fieldset {
     }
     
     main {
-        margin-top: 40px;
+        margin-top: 50px;
     }
 
     h1 {
@@ -459,18 +487,8 @@ fieldset {
         left: 0px;
     }
 
-    .search-header {
-        text-align: center;
-    }
-
-    .search-form {
-        margin-left: auto;
-        margin-right: auto;
-        width: max-content;
-    }
-
-    #search-country {
-        width: 235px;
+    legend.address {
+        font-size: 18px;
     }
 
     .modal__container {
@@ -498,7 +516,7 @@ fieldset {
     }
 
     main {
-        margin-top: 40px;
+        margin-top: 50px;
     }
 
     h1 {
@@ -525,6 +543,10 @@ fieldset {
         width: 100%;
         top: 0px;
         left: 0px;
+    }
+
+    legend.address {
+        font-size: 20px;
     }
 
     .wildlife-result {
@@ -573,6 +595,10 @@ fieldset {
     p {
         font-size: 20px;
         line-height: 22px;
+    }
+
+    legend.address {
+        font-size: 20px;
     }
 
     .wildlife-result {

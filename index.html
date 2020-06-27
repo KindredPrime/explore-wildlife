@@ -16,14 +16,14 @@
 
     <main>
         <header>
-            <h1>Find Wildlife Sightings Worldwide</h1>
+            <h1>Explore Wildlife Worldwide</h1>
         </header>
 
         <section class="search-section">
             <h2 class="search-header">What Are You Looking For?</h2>
             <form class="search-form address">
                 <fieldset>
-                    <legend>Address</legend>
+                    <legend class="address">Address</legend>
                     <label for="search-street">Street Name*</label>
                     <input id="search-street" type="text" name="search-street" placeholder="Main Street" required>
 
@@ -333,7 +333,8 @@
             </form>
 
             <form class="search-form wildlife-form">
-                <label for="found-address">Found Address</label>
+                <h3 class="wildlife-search">Wildlife Search Parameters</h3>
+                <label for="found-address">Search Location</label>
                 <input id="found-address" type="text" name="found-address" disabled>
 
                 <label for="search-radius">Search Radius (in miles)</label>
