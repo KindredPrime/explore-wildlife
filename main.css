@@ -390,7 +390,7 @@ h3.wildlife-search {
 /*
     Portrait mobile devices
 */
-@media screen and (min-width: 0px) and (min-height: 600px) {
+@media screen and (min-width: 0px) and (min-height: 0px) {
     .navbar {
         width: 100%;
         border-bottom: 1px solid #807C73;
@@ -456,7 +456,7 @@ h3.wildlife-search {
 /*
     Landscape mobile devices
 */
-@media screen and (min-width: 600px) and (min-height: 0px) {
+@media screen and (min-width: 500px) and (min-height: 0px) {
     .navbar {
         width: 100%;
         border-bottom: 1px solid #807C73;
@@ -503,7 +503,7 @@ h3.wildlife-search {
     .modal__container {
         padding: 20px;
         width: 85%;
-        height: 75%;
+        height: 70%;
     }
 
     .modal__header {
