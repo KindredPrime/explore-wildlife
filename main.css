@@ -144,25 +144,15 @@ h3.wildlife-search {
 }
 
 .wildlife-types {
-    width: 275px;
     margin-left: auto;
     margin-right: auto;
-}
-
-.wildlife-type-groups {
-    display: flex;
-    justify-content: space-between;
-}
-
-.wildlife-type-group {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
+    width: 100%;
+    padding-left: 0px;
+    padding-right: 0px;
+    display: grid;
 }
 
 .wildlife-type {
-    margin-left: 5px;
-    margin-right: 5px;
     position: relative;
 }
 
@@ -434,8 +424,66 @@ h3.wildlife-search {
         width: 235px;
     }
 
-    .wildlife-type {
-        margin-bottom: 45px;
+    /* Set the position of wildlife types in a grid */
+    .wildlife-types {
+        grid-template-columns: 100px 100px;
+        grid-template-rows: 60px 60px 60px 60px 60px 50px;
+        justify-items: center;
+    }
+
+    .wildlife-type.amphibians {
+        grid-column-start: 1;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.arachnids {
+        grid-column-start: 2;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.birds {
+        grid-column-start: 1;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.fish {
+        grid-column-start: 2;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.fungi {
+        grid-column-start: 1;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.insects {
+        grid-column-start: 2;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.mammals {
+        grid-column-start: 1;
+        grid-row-start: 4;
+    }
+
+    .wildlife-type.mollusks {
+        grid-column-start: 2;
+        grid-row-start: 4;
+    }
+
+    .wildlife-type.plants {
+        grid-column-start: 1;
+        grid-row-start: 5;
+    }
+
+    .wildlife-type.reptiles {
+        grid-column-start: 2;
+        grid-row-start: 5;
+    }
+
+    .wildlife-type.unknown {
+        grid-column-start: 1;
+        grid-row-start: 6;
     }
 
     .modal__container {
@@ -496,8 +544,66 @@ h3.wildlife-search {
         font-size: 18px;
     }
 
-    .wildlife-type {
-        margin-bottom: 45px;
+    /* Set the position of wildlife types in a grid */
+    .wildlife-types {
+        grid-template-columns: 100px 100px 90px;
+        grid-template-rows: 60px 60px 60px 50px;
+        justify-items: center;
+    }
+
+    .wildlife-type.amphibians {
+        grid-column-start: 1;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.arachnids {
+        grid-column-start: 2;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.birds {
+        grid-column-start: 3;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.fish {
+        grid-column-start: 1;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.fungi {
+        grid-column-start: 2;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.insects {
+        grid-column-start: 3;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.mammals {
+        grid-column-start: 1;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.mollusks {
+        grid-column-start: 2;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.plants {
+        grid-column-start: 3;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.reptiles {
+        grid-column-start: 1;
+        grid-row-start: 4;
+    }
+
+    .wildlife-type.unknown {
+        grid-column-start: 2;
+        grid-row-start: 4;
     }
 
     .modal__container {
@@ -558,8 +664,66 @@ h3.wildlife-search {
         font-size: 20px;
     }
 
-    .wildlife-type {
-        margin-bottom: 45px;
+    /* Set the position of wildlife types in a grid */
+    .wildlife-types {
+        grid-template-columns: 100px 100px 90px;
+        grid-template-rows: 60px 60px 60px 50px;
+        justify-items: center;
+    }
+
+    .wildlife-type.amphibians {
+        grid-column-start: 1;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.arachnids {
+        grid-column-start: 2;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.birds {
+        grid-column-start: 3;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.fish {
+        grid-column-start: 1;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.fungi {
+        grid-column-start: 2;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.insects {
+        grid-column-start: 3;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.mammals {
+        grid-column-start: 1;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.mollusks {
+        grid-column-start: 2;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.plants {
+        grid-column-start: 3;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.reptiles {
+        grid-column-start: 1;
+        grid-row-start: 4;
+    }
+
+    .wildlife-type.unknown {
+        grid-column-start: 2;
+        grid-row-start: 4;
     }
 
     .wildlife-result {
@@ -628,8 +792,66 @@ h3.wildlife-search {
         font-size: 20px;
     }
 
-    .wildlife-type {
-        margin-bottom: 45px;
+    /* Set the position of wildlife types in a grid */
+    .wildlife-types {
+        grid-template-columns: 100px 100px 90px;
+        grid-template-rows: 60px 60px 60px 50px;
+        justify-items: center;
+    }
+
+    .wildlife-type.amphibians {
+        grid-column-start: 1;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.arachnids {
+        grid-column-start: 2;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.birds {
+        grid-column-start: 3;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.fish {
+        grid-column-start: 1;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.fungi {
+        grid-column-start: 2;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.insects {
+        grid-column-start: 3;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.mammals {
+        grid-column-start: 1;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.mollusks {
+        grid-column-start: 2;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.plants {
+        grid-column-start: 3;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.reptiles {
+        grid-column-start: 1;
+        grid-row-start: 4;
+    }
+
+    .wildlife-type.unknown {
+        grid-column-start: 2;
+        grid-row-start: 4;
     }
 
     .wildlife-result {
@@ -698,8 +920,66 @@ h3.wildlife-search {
         font-size: 20px;
     }
 
-    .wildlife-type {
-        margin-bottom: 35px;
+    /* Set the position of wildlife types in a grid */
+    .wildlife-types {
+        grid-template-columns: 100px 100px 90px;
+        grid-template-rows: 60px 60px 60px 50px;
+        justify-items: center;
+    }
+
+    .wildlife-type.amphibians {
+        grid-column-start: 1;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.arachnids {
+        grid-column-start: 2;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.birds {
+        grid-column-start: 3;
+        grid-row-start: 1;
+    }
+
+    .wildlife-type.fish {
+        grid-column-start: 1;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.fungi {
+        grid-column-start: 2;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.insects {
+        grid-column-start: 3;
+        grid-row-start: 2;
+    }
+
+    .wildlife-type.mammals {
+        grid-column-start: 1;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.mollusks {
+        grid-column-start: 2;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.plants {
+        grid-column-start: 3;
+        grid-row-start: 3;
+    }
+
+    .wildlife-type.reptiles {
+        grid-column-start: 1;
+        grid-row-start: 4;
+    }
+
+    .wildlife-type.unknown {
+        grid-column-start: 2;
+        grid-row-start: 4;
     }
 
     .wildlife-result {
