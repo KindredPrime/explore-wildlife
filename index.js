@@ -130,7 +130,7 @@ function addressSearch() {
     }
 
     /*
-        Handle all errors that occur
+        Handle the provided error
     */
     function handleError(error) {
         const errorMessage = `An error occurred while finding addresses: ${error.message}`;
@@ -139,6 +139,9 @@ function addressSearch() {
         MicroModal.show("addresses-modal");
     }
 
+    /*
+        Convert the provided address component to a readable format
+    */
     function formatAddressComponent(component) {
         let formattedComponent = component.replace(/[-_]/g, " ");
 
@@ -179,10 +182,9 @@ function addressSearch() {
             htmlParts.push(`<span class="address-component">Road: ${commonComponents.road}</span>`);
         }
         
-        // Convert common components to HTML if there aren't enough common components to display
+        // Convert uncommon components to HTML if there aren't enough common components to display
         if(commonComponents.length < minimumCommonComponents) {
             for(const uncommonComponent in uncommonComponents) {
-                // Format the component to display cleanly
                 let formattedComponent = formatAddressComponent(uncommonComponent);
                 htmlParts.push(`<span class="address-component">${formattedComponent}: ${uncommonComponents[uncommonComponent]}</span>`);
             }
@@ -626,7 +628,7 @@ function wildlifeSearch() {
     const newWindowIconGreen = `<img class="new-window-icon-green" src="Images/new-window-icon-green.png" alt="new window">`;
 
     /*
-        Handle all errors that occur
+        Handle the provided error
     */
     function handleError(error) {
         const errorMessage = `An error occurred while searching for wildlife: ${error.message}`;
