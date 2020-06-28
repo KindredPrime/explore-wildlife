@@ -390,6 +390,10 @@ h3.wildlife-search {
         margin-top: 50px;
     }
 
+    .modal main {
+        margin-top: 0px;
+    }
+
     h1 {
         font-size: 34px;
         line-height: 44px;
@@ -514,6 +518,10 @@ h3.wildlife-search {
         margin-top: 50px;
     }
 
+    .modal main {
+        margin-top: 0px;
+    }
+
     h1 {
         font-size: 34px;
         line-height: 44px;
@@ -632,6 +640,10 @@ h3.wildlife-search {
 
     main {
         margin-top: 50px;
+    }
+
+    .modal main {
+        margin-top: 0px;
     }
 
     h1 {
@@ -768,6 +780,11 @@ h3.wildlife-search {
         margin-left: 80px;
     }
 
+    .modal main {
+        margin: 0px;
+        padding-top: 0px;
+    }
+
     h1 {
         font-size: 36px;
         line-height: 48px;
@@ -894,6 +911,11 @@ h3.wildlife-search {
         padding-top: 20px;
         margin-top: 0px;
         margin-left: 80px;
+    }
+
+    .modal main {
+        margin: 0px;
+        padding-top: 0px;
     }
 
     h1 {
