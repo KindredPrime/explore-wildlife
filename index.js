@@ -533,12 +533,11 @@ function addressSearch() {
         // Enable all form elements in the wildlife search except for the "Found Address" field
         $(".wildlife-form *:disabled").not("#found-address").removeAttr("disabled");
 
-        // Add the "checked" class to all custom checkboxes that are checked by default
+        // Add the "checked" class to all custom checkboxes that are overlaying checked checkboxes
         const customCheckboxes = $(".custom-checkbox");
         for(const customCheckbox of customCheckboxes) {
-            const realCheckbox = $(customCheckbox).siblings(`input[type="checkbox"]`);
-            const checkedAttr = realCheckbox.attr("checked");
-            if(checkedAttr != undefined && checkedAttr != false) {
+            const checkedRealCheckbox = $(customCheckbox).siblings(`input[type="checkbox"]:checked`);
+            if(checkedRealCheckbox.length > 0) {
                 $(customCheckbox).addClass("checked");
             }
         }
@@ -564,8 +563,11 @@ function addressSearch() {
             // Close the modal
             MicroModal.close("addresses-modal");
 
-            // Enable the wildlife search form
-            enableWildlifeSearch();
+            // Enable the wildlife search form, if it's disabled
+            if($(".wildlife-submit:disabled").length > 0) {
+                console.log("Enabling wildlife search");
+                enableWildlifeSearch();
+            }
         });
     }
 
