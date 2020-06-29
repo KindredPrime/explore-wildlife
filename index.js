@@ -419,18 +419,6 @@ function addressSearch() {
     }
 
     /*
-        Return true if enough of the provided address fields are populated
-    */
-    function enoughFieldsArePopulated(fieldsObject) {
-        if(fieldsObject.street != "") {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    /*
         Fetch JSON address data from the provided LocationIQ URL, handle if no addresses are returned, and handle if some other problem occurs with the request
     */
     function fetchCoordinatesJson(url) {
@@ -493,7 +481,7 @@ function addressSearch() {
         Create an event listener for when the "Find Address" button is clicked
     */
     function handleFindAddressClick() {
-        $(".find-address").click(event => {
+        $(".search-form.address").submit(event => {
             event.preventDefault();
 
             $(".find-address").prop("disabled", true);
@@ -519,29 +507,22 @@ function addressSearch() {
             console.log(userAddress);
             console.log("");
             
-            if(enoughFieldsArePopulated(userAddress)) {
-                // Tell the user the search is running
-                $(".find-address").text("Searching...");
+            // Tell the user the search is running
+            $(".find-address").text("Searching...");
 
-                getLatLonCoordinates(userAddress)
-                .then(addressesJson => {
-                    console.log("----------Addresses found using the provided address components----------");
-                    console.log(addressesJson);
-                    console.log("");
+            getLatLonCoordinates(userAddress)
+            .then(addressesJson => {
+                console.log("----------Addresses found using the provided address components----------");
+                console.log(addressesJson);
+                console.log("");
 
-                    const allAddressData = getRelevantAddressData(addressesJson);
-                    const uniqueAddressData = removeDuplicates(allAddressData);
-                    return uniqueAddressData;
-                })
-                .then(displayAddresses)
-                .catch(handleError)
-                .finally(endSearch);
-            }
-            else {
-                $(".find-addresses-status").text('You must fill out the "Street Name" field.');
-                console.log(`Error while finding address: The "Street Name" field wasn't filled out.`);
-                endSearch();
-            }
+                const allAddressData = getRelevantAddressData(addressesJson);
+                const uniqueAddressData = removeDuplicates(allAddressData);
+                return uniqueAddressData;
+            })
+            .then(displayAddresses)
+            .catch(handleError)
+            .finally(endSearch);
         });
     }
 
@@ -1059,20 +1040,6 @@ function wildlifeSearch() {
     }
 
     /*
-        Convert the HTML date string into a Date object
-    */
-    function parseDate(dateString) {
-        // yyyy-mm-dd
-        const dateComponents = dateString.split("-");
-        const year = dateComponents[0];
-        // For Date objects, January="0", not "1"
-        const month = dateComponents[1] - 1;
-        const day = dateComponents[2];
-
-        return new Date(year, month, day);
-    }
-
-    /*
         Update DOM to reflect the search results
     */
     function endSearch() {
@@ -1089,6 +1056,20 @@ function wildlifeSearch() {
         $(".wildlife-results").removeClass("hidden");
 
         $(".wildlife-submit").prop("disabled", false);
+    }
+
+    /*
+        Convert the HTML date string into a Date object
+    */
+    function parseDate(dateString) {
+        // yyyy-mm-dd
+        const dateComponents = dateString.split("-");
+        const year = dateComponents[0];
+        // For Date objects, January="0", not "1"
+        const month = dateComponents[1] - 1;
+        const day = dateComponents[2];
+
+        return new Date(year, month, day);
     }
 
     /*
@@ -1244,7 +1225,7 @@ function wildlifeSearch() {
                 .catch(handleError)
                 .finally(endSearch);
             }
-            else {
+            else { // Dates are invalid
                 endSearch();
             }
         });
