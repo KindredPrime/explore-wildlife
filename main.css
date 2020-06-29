@@ -608,7 +608,7 @@ h3.wildlife-search {
 /*
     Portrait Tablet Devices
 */
-@media screen and (min-width: 700px) and (min-height: 900px) {
+@media screen and (min-width: 700px) and (min-height: 700px) {
     .navbar {
         width: 100%;
         border-bottom: 1px solid #807C73;
@@ -896,8 +896,8 @@ h3.wildlife-search {
 
     /* Display the wildlife types in three columns */
     .wildlife-types {
-        grid-template-columns: 100px 100px 90px;
-        grid-template-rows: 60px 60px 60px 50px;
+        grid-template-columns: 95px 95px 80px;
+        grid-template-rows: 55px 55px 55px 40px;
     }
 
     .wildlife-type.amphibians {
