@@ -7,10 +7,6 @@ body {
     background-color: #593E00;
 }
 
-article {
-    margin: 0px;
-}
-
 h1 {
     margin-bottom: 25px;
 }
@@ -70,6 +66,8 @@ button {
     background-color: black;
     position: fixed;
     z-index: 2;
+    left: 0px;
+    top: 0px;
 }
 
 .navbar * {
@@ -147,9 +145,8 @@ h3.wildlife-search {
     margin-left: auto;
     margin-right: auto;
     width: 100%;
-    padding-left: 0px;
-    padding-right: 0px;
     display: grid;
+    justify-items: center;
 }
 
 .wildlife-type {
@@ -307,18 +304,21 @@ h3.wildlife-search {
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 3;
 }
 
 .modal__container {
     background-color: white;
     border-radius: 4px;
     overflow-y: auto;
+    padding: 20px;
 }
 
 .modal__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 30px;
 }
 
 .modal__title {
@@ -331,6 +331,10 @@ h3.wildlife-search {
 .modal__close {
     background: transparent;
     border: 0;
+}
+
+.modal__content {
+    padding: 0px;
 }
 
 .modal__content *{
@@ -390,10 +394,6 @@ h3.wildlife-search {
         margin-top: 50px;
     }
 
-    .modal main {
-        margin-top: 0px;
-    }
-
     h1 {
         font-size: 34px;
         line-height: 44px;
@@ -414,12 +414,6 @@ h3.wildlife-search {
         line-height: 19px;
     }
 
-    .navbar {
-        width: 100%;
-        top: 0px;
-        left: 0px;
-    }
-
     legend.address {
         font-size: 18px;
     }
@@ -428,11 +422,10 @@ h3.wildlife-search {
         width: 235px;
     }
 
-    /* Set the position of wildlife types in a grid */
+    /* Display the wildlife types in two columns */
     .wildlife-types {
         grid-template-columns: 100px 100px;
         grid-template-rows: 60px 60px 60px 60px 60px 50px;
-        justify-items: center;
     }
 
     .wildlife-type.amphibians {
@@ -491,17 +484,12 @@ h3.wildlife-search {
     }
 
     .modal__container {
-        padding: 20px;
         width: 85%;
         height: 85%;
     }
 
-    .modal__header {
-        margin-bottom: 30px;
-    }
-
-    #addresses-modal-content {
-        padding: 0px;
+    .modal__content {
+        margin-top: 0px;
     }
 }
 
@@ -516,10 +504,6 @@ h3.wildlife-search {
     
     main {
         margin-top: 50px;
-    }
-
-    .modal main {
-        margin-top: 0px;
     }
 
     h1 {
@@ -542,21 +526,18 @@ h3.wildlife-search {
         line-height: 19px;
     }
 
-    .navbar {
-        width: 100%;
-        top: 0px;
-        left: 0px;
-    }
-
     legend.address {
         font-size: 18px;
     }
 
-    /* Set the position of wildlife types in a grid */
+    #search-country {
+        width: max-content;
+    }
+
+    /* Display the wildlife types in three columns */
     .wildlife-types {
         grid-template-columns: 100px 100px 90px;
         grid-template-rows: 60px 60px 60px 50px;
-        justify-items: center;
     }
 
     .wildlife-type.amphibians {
@@ -615,17 +596,12 @@ h3.wildlife-search {
     }
 
     .modal__container {
-        padding: 20px;
         width: 85%;
         height: 70%;
     }
 
-    .modal__header {
-        margin-bottom: 30px;
-    }
-
-    #addresses-modal-content {
-        padding: 0px;
+    .modal__content {
+        margin-top: 0px;
     }
 }
 
@@ -640,10 +616,6 @@ h3.wildlife-search {
 
     main {
         margin-top: 50px;
-    }
-
-    .modal main {
-        margin-top: 0px;
     }
 
     h1 {
@@ -665,22 +637,19 @@ h3.wildlife-search {
         font-size: 18px;
         line-height: 22px;
     }
-    
-    .navbar {
-        width: 100%;
-        top: 0px;
-        left: 0px;
-    }
 
     legend.address {
         font-size: 20px;
     }
 
-    /* Set the position of wildlife types in a grid */
+    #search-country {
+        width: max-content;
+    }
+
+    /* Display the wildlife types in three columns */
     .wildlife-types {
         grid-template-columns: 100px 100px 90px;
         grid-template-rows: 60px 60px 60px 50px;
-        justify-items: center;
     }
 
     .wildlife-type.amphibians {
@@ -747,17 +716,12 @@ h3.wildlife-search {
     }
 
     .modal__container {
-        padding: 20px;
         width: 85%;
         height: 75%;
     }
 
-    .modal__header {
-        margin-bottom: 30px;
-    }
-
-    #addresses-modal-content {
-        padding: 0px;
+    .modal__content {
+        margin-top: 0px;
     }
 }
 
@@ -768,8 +732,6 @@ h3.wildlife-search {
     .navbar {
         height: 100%;
         width: 80px;
-        top: 0px;
-        left: 0px;
         border-right: 1px solid #807C73;
         border-bottom: none;
     }
@@ -778,11 +740,6 @@ h3.wildlife-search {
         padding-top: 20px;
         margin-top: 0px;
         margin-left: 80px;
-    }
-
-    .modal main {
-        margin: 0px;
-        padding-top: 0px;
     }
 
     h1 {
@@ -809,11 +766,14 @@ h3.wildlife-search {
         font-size: 20px;
     }
 
-    /* Set the position of wildlife types in a grid */
+    #search-country {
+        width: max-content;
+    }
+
+    /* Display the wildlife types in three columns */
     .wildlife-types {
         grid-template-columns: 100px 100px 90px;
         grid-template-rows: 60px 60px 60px 50px;
-        justify-items: center;
     }
 
     .wildlife-type.amphibians {
@@ -880,17 +840,12 @@ h3.wildlife-search {
     }
 
     .modal__container {
-        padding: 20px;
         width: 80%;
         height: 80%;
     }
 
-    .modal__header {
-        margin-bottom: 30px;
-    }
-
-    #addresses-modal-content {
-        padding: 0px;
+    .modal__content {
+        margin: 0px;
     }
 }
 
@@ -901,8 +856,6 @@ h3.wildlife-search {
     .navbar {
         height: 100%;
         width: 80px;
-        top: 0px;
-        left: 0px;
         border-right: 1px solid #807C73;
         border-bottom: none;
     }
@@ -911,11 +864,6 @@ h3.wildlife-search {
         padding-top: 20px;
         margin-top: 0px;
         margin-left: 80px;
-    }
-
-    .modal main {
-        margin: 0px;
-        padding-top: 0px;
     }
 
     h1 {
@@ -942,11 +890,14 @@ h3.wildlife-search {
         font-size: 20px;
     }
 
-    /* Set the position of wildlife types in a grid */
+    #search-country {
+        width: max-content;
+    }
+
+    /* Display the wildlife types in three columns */
     .wildlife-types {
         grid-template-columns: 100px 100px 90px;
         grid-template-rows: 60px 60px 60px 50px;
-        justify-items: center;
     }
 
     .wildlife-type.amphibians {
@@ -1013,16 +964,11 @@ h3.wildlife-search {
     }
 
     .modal__container {
-        padding: 20px;
         width: 80%;
         height: 80%;
     }
 
-    .modal__header {
-        margin-bottom: 30px;
-    }
-
-    #addresses-modal-content {
-        padding: 0px;
+    .modal__content {
+        margin: 0px;
     }
 }
