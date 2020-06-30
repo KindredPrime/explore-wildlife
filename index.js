@@ -718,11 +718,9 @@ function wildlifeSearch() {
 
             $(".wildlife-results .results-list").append(`
             <li class="wildlife-result" data-organism-id="${organismId}">
-                <div class="sightings-slideshow">
-                    <section class="sightings">
-                        ${sightingsAsHtml}
-                    </section>
-                </div>
+                <section class="sightings">
+                    ${sightingsAsHtml}
+                </section>
 
                 <h3 class="organism-name">${organism.name}</h3>
                 <a href="${organism.wikiUrl}" target="_blank">${organism.wikiUrl}${newWindowIconGreen}</a>
@@ -738,6 +736,17 @@ function wildlifeSearch() {
                     `);
             }
         }
+
+        /*
+            Set the width of each sighting (photo and caption) in each organism's slideshow to the with of the photo
+        */
+        $('.organism-photo').each((i, elem) => {            
+            $(elem).on('load', event => {
+                const img = event.currentTarget;
+                const width = $(img).actual("width");
+                $(img).closest(".sighting").css('width', `${width}px`);
+            })
+        });
     }
 
     /*

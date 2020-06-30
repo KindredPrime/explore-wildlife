@@ -98,11 +98,15 @@ header {
     text-align: center;
 }
 
+.container {
+    position: relative;
+}
+
 .search-form {
+    position: relative;
     margin-bottom: 30px;
-    margin-left: auto;
-    margin-right: auto;
-    width: max-content;
+    display: inline-block;
+    left: 50%;
 }
 
 input, select {
@@ -188,8 +192,8 @@ h3.wildlife-search {
     opacity: 1.0;
 }
 
-.time-period {
-    width: max-content;
+.search-period {
+    display: inline-block;
 }
 
 #search-end {
@@ -214,18 +218,14 @@ h3.wildlife-search {
     overflow-wrap: break-word;
 }
 
-.sightings-slideshow {
-    position: relative;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: min-content;
+.sightings {
+    margin-bottom: 20px;
 }
 
 .sighting {
     display: none;
-    width: 100%;
-    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .default-sighting {
@@ -234,6 +234,7 @@ h3.wildlife-search {
 
 .organism-photo-div {
     position: relative;
+    display: inline-block;
 }
 
 .organism-photo {
@@ -413,6 +414,10 @@ h3.wildlife-search {
         font-size: 16px;
         line-height: 19px;
     }
+    
+    .search-form.address {
+        margin-left: -129px;
+    }
 
     legend.address {
         font-size: 18px;
@@ -420,6 +425,10 @@ h3.wildlife-search {
 
     #search-country {
         width: 235px;
+    }
+
+    .wildlife-form {
+        margin-left: -129px;
     }
 
     /* Display the wildlife types in two columns */
@@ -525,13 +534,21 @@ h3.wildlife-search {
         font-size: 16px;
         line-height: 19px;
     }
+    
+    .search-form.address {
+        margin-left: -167px;
+    }
 
     legend.address {
         font-size: 18px;
     }
 
     #search-country {
-        width: max-content;
+        width: 310px;
+    }
+
+    .wildlife-form {
+        margin-left: -174px;
     }
 
     /* Display the wildlife types in three columns */
@@ -637,13 +654,21 @@ h3.wildlife-search {
         font-size: 18px;
         line-height: 22px;
     }
+    
+    .search-form.address {
+        margin-left: -167px;
+    }
 
     legend.address {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     #search-country {
-        width: max-content;
+        width: 310px;
+    }
+
+    .wildlife-form {
+        margin-left: -174px;
     }
 
     /* Display the wildlife types in three columns */
@@ -761,13 +786,21 @@ h3.wildlife-search {
         font-size: 20px;
         line-height: 22px;
     }
+    
+    .search-form.address {
+        margin-left: -167px;
+    }
 
     legend.address {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     #search-country {
-        width: max-content;
+        width: 310px;
+    }
+
+    .wildlife-form {
+        margin-left: -174px;
     }
 
     /* Display the wildlife types in three columns */
@@ -885,13 +918,21 @@ h3.wildlife-search {
         font-size: 20px;
         line-height: 22px;
     }
+    
+    .search-form.address {
+        margin-left: -167px;
+    }
 
     legend.address {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     #search-country {
-        width: max-content;
+        width: 310px;
+    }
+
+    .wildlife-form {
+        margin-left: -164px;
     }
 
     /* Display the wildlife types in three columns */
