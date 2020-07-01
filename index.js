@@ -216,10 +216,6 @@ function addressSearch() {
      * Display the provided addresses in the found addresses modal
      */
     function displayAddresses(addressOptions) {
-        console.log("Display data:");
-        console.log(addressOptions);
-        console.log("");
-
         // Display each of the address options
         if (addressOptions.length > 0) {
             for(const addressOption of addressOptions) {
@@ -324,7 +320,7 @@ function addressSearch() {
 
                 // Keep the better of the two addresses
                 const bestAddress = getBestAddress([addressData, existingData]);
-                console.log(`----Chosen address: ${bestAddress.placeId}`);
+                console.log(`----Keeping address ${bestAddress.placeId} and removing address ${existingData.placeId}`);
                 uniqueAddressData[existingDataIndex] = bestAddress;
             } else {
                 // Not a duplicate address
@@ -402,7 +398,7 @@ function addressSearch() {
     function addressIsValid(addressJson) {
         // Fail the address if it's missing a country
         if (addressJson.address.country == undefined) {
-            console.log(`Address ${addressJson.place_id} is missing its country`);
+            console.log(`Removing address ${addressJson.place_id}: it is missing its country`);
             return false;
         }
 
@@ -411,12 +407,12 @@ function addressSearch() {
          * parameters is too low
          */
         if (addressIsUnlikely(addressJson)) {
-            console.log(`Address ${addressJson.place_id} is unlikely to match the user's search parameters`);
+            console.log(`Removing address ${addressJson.place_id}: it is unlikely to match the user's search parameters`);
             return false;
         }
 
         if (addressIsTooLarge(addressJson)) {
-            console.log(`Address ${addressJson.place_id} refers to an area that is too large`);
+            console.log(`Removing address ${addressJson.place_id}: it refers to an area that is too large`);
             return false;
         }
 
@@ -504,8 +500,7 @@ function addressSearch() {
         };
         const queryParams = formatQueryParams(params);
         const url = baseURL + "?" + queryParams;
-        console.log(`Fetching data from: ${url}`);
-        console.log("");
+        console.log(`Fetching data from the LocationIQ API: ${url}`);
 
         return fetchCoordinatesJson(url);
     }
@@ -531,6 +526,8 @@ function addressSearch() {
         $(".search-form.address").submit((event) => {
             event.preventDefault();
 
+            console.log("Starting address search");
+
             $(".find-address").prop("disabled", true);
 
             resetEnvironment();
@@ -553,18 +550,13 @@ function addressSearch() {
                 userAddress.state = "";
             }
 
-            console.log("User-provided address: ");
-            console.log(userAddress);
-            console.log("");
-
             // Tell the user the search is running
             $(".find-address").text("Searching...");
 
             getLatLonCoordinates(userAddress)
             .then((addressesJson) => {
-                console.log("----------Addresses found using the provided address components----------");
+                console.log("----------Addresses found----------");
                 console.log(addressesJson);
-                console.log("");
 
                 const allAddressData = getRelevantAddressData(addressesJson);
                 const uniqueAddressData = removeDuplicates(allAddressData);
@@ -605,6 +597,8 @@ function addressSearch() {
          * wildlife types
          */
         $(".custom-checkbox").removeClass("disabled");
+        
+        console.log("Wildlife search enabled");
     }
 
     /**
@@ -618,7 +612,7 @@ function addressSearch() {
             // Get the selected coordinates
             const coordinates = $('.select-address input[name="address"]:checked')
                 .val();
-            console.log(`Selected coordinates: ${coordinates}`);
+            console.log(`Selected address coordinates: ${coordinates}`);
 
             // Store the selected coordinates in the "Found Address" field
             $("#found-address").val(coordinates);
@@ -628,7 +622,6 @@ function addressSearch() {
 
             // Enable the wildlife search form, if it's disabled
             if ($(".wildlife-submit:disabled").length > 0) {
-                console.log("Enabling wildlife search");
                 enableWildlifeSearch();
             }
         });
@@ -793,9 +786,6 @@ function wildlifeSearch() {
      * Display the wildlife data to the DOM
      */
     function displayData(data) {
-        console.log("Wildlife data:");
-        console.log(data);
-
         for(const organism of data) {
             const sightingsAsHTML = convertSightingsToHTML(organism.sightings, organism.name);
 
@@ -1018,7 +1008,7 @@ function wildlifeSearch() {
             const queryParams = formatQueryParams(params);
             const url = baseURL + "?" + queryParams;
 
-            console.log(`Fetching data from URL: ${url}`);
+            console.log(`Fetching data from Wikipedia: ${url}`);
             promises.push(fetchJson(url));
         }
 
@@ -1073,21 +1063,19 @@ function wildlifeSearch() {
         for(const iNatObservation of results) {
             const organism = iNatObservation.taxon;
 
+            /**
+             * Use the organism's scientific name if it doesn't have a
+             * preferred common name
+             */
+            let name = organism.preferred_common_name;
+            if (organism.preferred_common_name == undefined) {
+                name = organism.name;
+            }
+
             // Ignore wildlife data that doesn't have a wikipedia URL
             if (organism.wikipedia_url != null) {
                 const organismData = {};
-
-                /**
-                 * Store the preferred common name if the iNaturalist
-                 * observation has it, otherwise store the organism's
-                 * scientific name
-                 */
-                if (typeof organism.preferred_common_name !== "undefined") {
-                    organismData.name = organism.preferred_common_name;
-                } else {
-                    organismData.name = organism.name;
-                }
-
+                organismData.name = name;
                 organismData.sightings = [];
                 const sighting = getSightingData(iNatObservation);
                 organismData.sightings.push(sighting);
@@ -1096,7 +1084,7 @@ function wildlifeSearch() {
 
                 relevantData.push(organismData);
             } else {
-                console.log(`No wikipedia link for ${organism.preferred_common_name}`);
+                console.log(`Removing observation for ${name}: no wikipedia link was found.`);
             }
         }
 
@@ -1134,7 +1122,7 @@ function wildlifeSearch() {
         const queryParams = formatQueryParams(params);
 
         const url = baseURL + "?" + queryParams;
-        console.log(`Fetching data from URL: ${url}`);
+        console.log(`Fetching data from the iNaturalist API: ${url}`);
         return fetchJson(url);
     }
 
@@ -1172,13 +1160,11 @@ function wildlifeSearch() {
             .then((wildlifeJson) => {
                 console.log(`----------Wildlife Page ${page} Data----------`);
                 console.log(wildlifeJson);
-                console.log("");
 
                 // Calculate the total number of pages to process
                 if (page === 1) {
                     totalResults = wildlifeJson.total_results;
                     totalPages = Math.ceil(totalResults/wildlifePerPage);
-                    console.log(`Total pages: ${totalPages}`);
                 }
 
                 numOrganismsThisPage = wildlifeJson.results.length;
@@ -1263,14 +1249,12 @@ function wildlifeSearch() {
         // Fail if either date is in the future
         if (startDate > currentDate || endDate > currentDate) {
             console.log("Error: The user entered a future date.");
-            console.log("");
             searchProblems.push("Unable to search: You cannot use future dates for your search.");
 
             return false;
         } else if (startDate > endDate) {
             // Fail if the start date is after the end date
             console.log("Error: The user entered a start date that was after the end date.");
-            console.log("");
             searchProblems.push("Unable to search: Your start date cannot be after your end date.");
 
             return false;
@@ -1340,7 +1324,7 @@ function wildlifeSearch() {
             _.remove(searchProblems, (elem) => true);
 
             // Tell the user the search is running
-            console.log("Starting search");
+            console.log("Starting wildlife search");
             $(".search-status").text("Searching...");
             $(".search-status").removeClass("hidden");
 
@@ -1383,9 +1367,9 @@ function wildlifeSearch() {
                 })
                 .then((wikiURLs) => {
                     if (wikiURLs.length > 0) {
-                        console.log("Fetching Wikipedia excerpts.");
+                        console.log("Fetching the Wikipedia intros");
                         $(".search-status")
-                            .text("Fetching Wikipedia excerpts.");
+                            .text("Fetching the Wikipedia intros");
 
                         return getWikipediaData(wikiURLs);
                     }
@@ -1398,9 +1382,9 @@ function wildlifeSearch() {
                 })
                 .then((promiseResults) => {
                     if (promiseResults.length > 0) {
-                        console.log("Processing Wikipedia excerpts.");
+                        console.log("Processing the Wikipedia intros");
                         $(".search-status")
-                            .text("Processing Wikipedia excerpts.");
+                            .text("Processing the Wikipedia intros");
 
                         return processWikiIntros(promiseResults, allDisplayData);
                     }
@@ -1413,9 +1397,9 @@ function wildlifeSearch() {
                 })
                 .then((data) => {
                     if (data.length > 0) {
-                        console.log("Converting data to displayable format.");
+                        console.log("Converting the wildlife data to a displayable format");
                         $(".search-status")
-                            .text("Converting data to displayable format.");
+                            .text("Converting the wildlife data to a displayable format");
 
                         displayData(data);
                     } else {
