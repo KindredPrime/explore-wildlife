@@ -223,7 +223,7 @@ function addressSearch() {
                 const radioInput = `
                 <input
                     type="radio"
-                    id="${addressOption.placeId}"
+                    id="${addressOption.placeID}"
                     class="address-option"
                     name="address"
                     value="${addressOption.lat},${addressOption.lon}">
@@ -235,7 +235,7 @@ function addressSearch() {
 
                 let addressAsText = convertAddressToHTML(addressOption.addressComponents);
                 const labelTag = `
-                <label for="${addressOption.placeId}" class="address-option-label">
+                <label for="${addressOption.placeID}" class="address-option-label">
                     ${addressAsText}
                 </label>
                 `;
@@ -316,11 +316,11 @@ function addressSearch() {
             // Found a duplicate address
             if (existingDataIndex > -1) {
                 const existingData = uniqueAddressData[existingDataIndex];
-                console.log(`Address ${addressData.placeId} has an identical match: address ${existingData.placeId}`);
+                console.log(`Address ${addressData.placeID} has an identical match: address ${existingData.placeID}`);
 
                 // Keep the better of the two addresses
                 const bestAddress = getBestAddress([addressData, existingData]);
-                console.log(`----Keeping address ${bestAddress.placeId} and removing address ${existingData.placeId}`);
+                console.log(`----Keeping address ${bestAddress.placeID} and removing address ${existingData.placeID}`);
                 uniqueAddressData[existingDataIndex] = bestAddress;
             } else {
                 // Not a duplicate address
@@ -449,7 +449,7 @@ function addressSearch() {
 
                     addressOption.lat = addressJson.lat;
                     addressOption.lon = addressJson.lon;
-                    addressOption.placeId = addressJson.place_id;
+                    addressOption.placeID = addressJson.place_id;
 
                     relevantData.push(addressOption);
                 }
@@ -720,7 +720,7 @@ function wildlifeSearch() {
 
         let onFirstPhoto = true;
         const sightingsAsHTML = photosAndCaptions.map((photoAndCaption) => {
-            const sightingId = cuid();
+            const sightingID = cuid();
 
             // Add extra CSS classes for the first photo
             const sightingClasses = ["sighting"];
@@ -770,7 +770,7 @@ function wildlifeSearch() {
             }
 
             return `
-            <div class="${classesString}" data-sighting-id="${sightingId}">
+            <div class="${classesString}" data-sighting-id="${sightingID}">
                 <div class="organism-photo-div">
                     ${photoElementsString}
                 </div>
@@ -789,10 +789,10 @@ function wildlifeSearch() {
         for(const organism of data) {
             const sightingsAsHTML = convertSightingsToHTML(organism.sightings, organism.name);
 
-            const organismId = cuid();
+            const organismID = cuid();
 
             $(".wildlife-results .results-list").append(`
-            <li class="wildlife-result" data-organism-id="${organismId}">
+            <li class="wildlife-result" data-organism-id="${organismID}">
                 <section class="sightings">
                     ${sightingsAsHTML}
                 </section>
@@ -810,7 +810,7 @@ function wildlifeSearch() {
              * occurred with the fetch
              */
             if (organism.wikiIntro != undefined) {
-                $(`.wildlife-result[data-organism-id="${organismId}"]`)
+                $(`.wildlife-result[data-organism-id="${organismID}"]`)
                     .find(".organism-name")
                     .after(`<p>${organism.wikiIntro}</p>`);
             }
@@ -1429,8 +1429,8 @@ function handleSightingTransitions() {
      * Return true if the currently-displayed sighting is the last in its
      * slideshow
      */
-    function onLastSighting(organismId) {
-        const currentOrganism = $(`.wildlife-result[data-organism-id="${organismId}"]`);
+    function onLastSighting(organismID) {
+        const currentOrganism = $(`.wildlife-result[data-organism-id="${organismID}"]`);
         const currentSighting = currentOrganism.find(".sighting.js-current-sighting");
 
         const nextSighting = currentSighting.next(".sighting");
@@ -1441,8 +1441,8 @@ function handleSightingTransitions() {
      * Return true if the currently-displayed sighting is the first in its
      * slideshow
      */
-    function onFirstSighting(organismId) {
-        const currentOrganism = $(`.wildlife-result[data-organism-id="${organismId}"]`);
+    function onFirstSighting(organismID) {
+        const currentOrganism = $(`.wildlife-result[data-organism-id="${organismID}"]`);
         const currentSighting = currentOrganism
             .find(".sighting.js-current-sighting");
 
@@ -1467,10 +1467,10 @@ function handleSightingTransitions() {
      * Show on the page the sighting with the provided sighting ID, for the
      * organism with the provided organism ID
      */
-    function showSighting(organismId, sightingId) {
-        const organism = $(`.wildlife-result[data-organism-id="${organismId}"]`);
+    function showSighting(organismID, sightingID) {
+        const organism = $(`.wildlife-result[data-organism-id="${organismID}"]`);
         const sightingToShow = organism
-            .find(`.sighting[data-sighting-id="${sightingId}"]`);
+            .find(`.sighting[data-sighting-id="${sightingID}"]`);
 
         // Check if there are sightings with that ID to show
         if (sightingToShow.length > 0) {
@@ -1490,17 +1490,17 @@ function handleSightingTransitions() {
      * Show/Hide the arrow buttons for the current sighting of the provided
      * organism
      */
-    function updateButtonsDisplayed(organismId) {
-        const currentOrganism = $(`.wildlife-result[data-organism-id="${organismId}"]`);
+    function updateButtonsDisplayed(organismID) {
+        const currentOrganism = $(`.wildlife-result[data-organism-id="${organismID}"]`);
         const currentSighting = currentOrganism
             .find("div.js-current-sighting");
         const leftArrow = currentSighting.find(".left-arrow-button");
         const rightArrow = currentSighting.find(".right-arrow-button");
 
-        if (onLastSighting(organismId)) {
+        if (onLastSighting(organismID)) {
             leftArrow.show();
             rightArrow.hide();
-        } else if (onFirstSighting(organismId)) {
+        } else if (onFirstSighting(organismID)) {
             leftArrow.hide();
             rightArrow.show();
         } else {
@@ -1516,20 +1516,20 @@ function handleSightingTransitions() {
      */
     function handleNextSighting() {
         $(".wildlife-results").on("click", ".right-arrow-button", (event) => {
-            const organismId = $(event.currentTarget)
+            const organismID = $(event.currentTarget)
                 .parents(".wildlife-result")
                 .data("organism-id");
             const currentSighting = $(event.currentTarget)
                 .parents(".wildlife-result")
                 .find(".sighting.js-current-sighting");
 
-            hideCurrentSighting(organismId);
+            hideCurrentSighting(organismID);
 
-            const nextSightingId = currentSighting.next(".sighting")
+            const nextSightingID = currentSighting.next(".sighting")
                 .data("sighting-id");
-            showSighting(organismId, nextSightingId);
+            showSighting(organismID, nextSightingID);
 
-            updateButtonsDisplayed(organismId);
+            updateButtonsDisplayed(organismID);
         });
     }
 
@@ -1539,20 +1539,20 @@ function handleSightingTransitions() {
      */
     function handlePrevSighting() {
         $(".wildlife-results").on("click", ".left-arrow-button", (event) => {
-            const organismId = $(event.currentTarget)
+            const organismID = $(event.currentTarget)
                 .parents(".wildlife-result")
                 .data("organism-id");
             const currentSighting = $(event.currentTarget)
                 .parents(".wildlife-result")
                 .find(".sighting.js-current-sighting");
 
-            hideCurrentSighting(organismId);
+            hideCurrentSighting(organismID);
 
-            const prevSightingId = currentSighting.prev(".sighting")
+            const prevSightingID = currentSighting.prev(".sighting")
                 .data("sighting-id");
-            showSighting(organismId, prevSightingId);
+            showSighting(organismID, prevSightingID);
 
-            updateButtonsDisplayed(organismId);
+            updateButtonsDisplayed(organismID);
         });
     }
 
