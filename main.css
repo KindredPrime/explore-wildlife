@@ -315,6 +315,11 @@ h3.wildlife-search {
     padding: 20px;
 }
 
+.modal__container * {
+    color: black;
+    text-shadow: none;
+}
+
 .modal__header {
     display: flex;
     justify-content: space-between;
@@ -325,22 +330,11 @@ h3.wildlife-search {
 .modal__title {
     margin-top: 0;
     margin-bottom: 0;
-    color: black;
-    text-shadow: none;
 }
 
 .modal__close {
     background: transparent;
     border: 0;
-}
-
-.modal__content {
-    padding: 0px;
-}
-
-.modal__content *{
-    color: black;
-    text-shadow: none;
 }
 
 .address-option-div {
@@ -496,10 +490,6 @@ h3.wildlife-search {
         width: 85%;
         height: 85%;
     }
-
-    .modal__content {
-        margin-top: 0px;
-    }
 }
 
 /*
@@ -615,10 +605,6 @@ h3.wildlife-search {
     .modal__container {
         width: 85%;
         height: 70%;
-    }
-
-    .modal__content {
-        margin-top: 0px;
     }
 }
 
@@ -743,10 +729,6 @@ h3.wildlife-search {
     .modal__container {
         width: 85%;
         height: 75%;
-    }
-
-    .modal__content {
-        margin-top: 0px;
     }
 }
 
@@ -876,10 +858,6 @@ h3.wildlife-search {
         width: 80%;
         height: 80%;
     }
-
-    .modal__content {
-        margin: 0px;
-    }
 }
 
 /*
@@ -1007,9 +985,5 @@ h3.wildlife-search {
     .modal__container {
         width: 80%;
         height: 80%;
-    }
-
-    .modal__content {
-        margin: 0px;
     }
 }

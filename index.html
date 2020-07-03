@@ -39,7 +39,7 @@
 
                         <label for="search-state">US State or Territory</label>
                         <select id="search-state" name="search-state">
-                            <option value=""></option>
+                            <option value="">Any US State or Territory</option>
                             <option value="Alabama">Alabama</option>
                             <option value="Alaska">Alaska</option>
                             <option value="American Samoa">American Samoa</option>
@@ -100,7 +100,7 @@
 
                         <label for="search-country">Country</label>
                         <select id="search-country" name="search-country">
-                            <option value=""></option>
+                            <option value="">Any Country</option>
                             <option value="Afghanistan">Afghanistan</option>
                             <option value="Albania">Albania</option>
                             <option value="Algeria">Algeria</option>
@@ -453,13 +453,13 @@
                     <button class= "modal__close" aria-label="Close modal" data-micromodal-close>X</button>
                 </header>
         
-                <main id="about-modal-content" class="modal__content">
+                <div id="about-modal-content" class="modal__content">
                     <p>The Explore Wildlife App helps people discover what kinds of wildlife have been seen in locations worldwide.  Users can refine their search by specifying which types of wildlife they want to see (Mammals, Plants, Fish, Fungi, etc.), searching for a particular species by name, and/or setting a time period during which the wildlife were seen. Each result includes pictures of the organism, a brief exerpt from the Wikipedia page about the organism, and a link to the Wikipedia page.</p>
 
                     <p>The Explore Wildlife App combines the LocationIQ API (<a href="https://locationiq.com/" target="_blank">link<img class="new-window-icon" src="Images/new-window-icon.png" alt="new window"></a>), the iNaturalist API (<a href="https://www.inaturalist.org/" target="_blank">link<img class="new-window-icon" src="Images/new-window-icon.png" alt="new window"></a>), and the MediaWiki API (<a href="https://www.mediawiki.org/wiki/MediaWiki" target="_blank">link<img class="new-window-icon" src="Images/new-window-icon.png" alt="new window"></a>).</p>
                 
                     <p>Created by Ken Wright: <a href="mailto:kenneth.gordon.wright@gmail.com" target="_blank">kenneth.gordon.wright@gmail.com<img class="new-window-icon" src="Images/new-window-icon.png" alt="new window"></a></p>
-                </main>
+                </div>
             </div>
         </div>
     </div>
@@ -475,10 +475,10 @@
                     <button class= "modal__close" aria-label="Close modal" data-micromodal-close>X</button>
                 </header>
         
-                <main id="addresses-modal-content" class="modal__content">
+                <div id="addresses-modal-content" class="modal__content">
                     <p class="find-addresses-status"></p>
                     <form class="select-address"></form>
-                </main>
+                </div>
             </div>
         </div>
     </div>
@@ -500,7 +500,7 @@
     <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
     
     <!-- Library that calculates the dimensions of hidden elements -->
-    <script type="text/javascript" src="jquery.actual.min.js"></script>
+    <script src="jquery.actual.min.js"></script>
     
     <script src="index.js"></script>
 </body>
